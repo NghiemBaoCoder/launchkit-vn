@@ -30,7 +30,7 @@ async function login(ctx, creds) {
 }
 
 async function visitAll(ctx, label, shots) {
-  const page = await ctx.newPage({ viewport: { width: 1280, height: 900 } });
+  const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", (e) => errors.push(`PAGEERROR ${page.url()} ${e.message}`));
   page.on("console", (m) => { if (m.type() === "error") errors.push(`CONSOLE ${page.url()} ${m.text().slice(0, 200)}`); });
@@ -66,14 +66,16 @@ async function visitAll(ctx, label, shots) {
   const ctx = await browser.newContext();
   await login(ctx, ADMIN);
   const errs = await visitAll(ctx, "admin", true);
-  // mobile viewport
-  const m = await ctx.newPage({ viewport: { width: 390, height: 844 } });
+  // mobile viewport (context riêng, dùng lại cookie đăng nhập)
+  const mctx = await browser.newContext({ viewport: { width: 390, height: 844 }, storageState: await ctx.storageState() });
+  const m = await mctx.newPage();
   await m.goto(`${base}/admin`, { waitUntil: "networkidle" });
   await m.screenshot({ path: `${OUT}/admin-mobile.png`, fullPage: false });
   await m.getByRole("button", { name: "Mở menu" }).click();
   await m.waitForTimeout(400);
   await m.screenshot({ path: `${OUT}/admin-mobile-menu.png`, fullPage: false });
   await m.close();
+  await mctx.close();
   console.log("ERRORS:", errs.length ? errs.join("\n") : "none");
   await ctx.close();
 }

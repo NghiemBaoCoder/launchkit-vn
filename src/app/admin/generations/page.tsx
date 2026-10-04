@@ -65,7 +65,7 @@ export default async function AdminGenerationsPage({ searchParams }: { searchPar
                       <StatusBadge kind="job" value={job.status} />
                       {job.error ? <div className="mt-0.5 max-w-[200px] truncate text-xs text-destructive" title={job.error}>{job.error}</div> : null}
                     </TableCell>
-                    <TableCell className="max-w-[220px]"><StageList stages={job.stages} compact /></TableCell>
+                    <TableCell className="min-w-[220px]"><StageList stages={job.stages} compact /></TableCell>
                     <TableCell className="text-right tabular-nums">{job.credits_used}</TableCell>
                     <TableCell className="text-right tabular-nums text-muted-foreground">{job.duration_ms ? `${(job.duration_ms / 1000).toFixed(1)}s` : "—"}</TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground" title={formatDateTime(job.created_at)}>{timeAgo(job.created_at)}</TableCell>

@@ -32,7 +32,7 @@ export function TaglineView({ content }: { content: Record<string, unknown> }) {
         <div>
           <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Các phương án khác</div>
           <ul className="space-y-1 text-sm">{options.filter((o) => o !== selected).map((o) => <li key={o} className="rounded-md border px-3 py-1.5">{o}</li>)}</ul>
-          <p className="mt-2 text-xs text-muted-foreground">Bấm "Sửa" để đổi tagline đã chọn.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Bấm &ldquo;Sửa&rdquo; để đổi tagline đã chọn.</p>
         </div>
       ) : null}
     </div>

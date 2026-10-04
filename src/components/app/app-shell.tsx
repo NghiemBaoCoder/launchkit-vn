@@ -3,7 +3,6 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Download, LayoutDashboard, Menu, Rocket } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { SITE } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -27,8 +26,10 @@ interface AppShellProps {
 
 export function AppShell({ profile, plan, unread, children, sidebar, sidebarTitle }: AppShellProps) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  React.useEffect(() => setMobileOpen(false), [pathname]);
+  // Đóng menu mobile khi đổi trang: lưu path lúc mở, menu chỉ mở khi path không đổi.
+  const [openPath, setOpenPath] = React.useState<string | null>(null);
+  const mobileOpen = openPath === pathname;
+  const setMobileOpen = (open: boolean) => setOpenPath(open ? pathname : null);
   const inWorkspace = /^\/business\/[^/]+/.test(pathname);
 
   const sidebarBody = (

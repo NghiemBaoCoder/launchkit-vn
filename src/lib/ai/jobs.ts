@@ -87,10 +87,13 @@ export async function createGenerationJob(params: { businessId: string; userId: 
   }
 
   if (credits > 0) {
-    const { error } = await admin.rpc("adjust_credits", { p_user_id: userId, p_amount: -credits, p_reason: type === "full" ? "Tạo Business Kit" : `Tạo lại mục ${type}`, p_ref_type: "generation", p_ref_id: businessId, p_actor: userId });
+    const { data: balance, error } = await admin.rpc("adjust_credits", { p_user_id: userId, p_amount: -credits, p_reason: type === "full" ? "Tạo Business Kit" : `Tạo lại mục ${type}`, p_ref_type: "generation", p_ref_id: businessId, p_actor: userId });
     if (error) {
       if (error.message.includes("insufficient")) throw new GenerationError("Bạn không đủ credits. Mua thêm hoặc nâng cấp gói để tiếp tục.", "insufficient_credits");
       throw error;
+    }
+    if (typeof balance === "number" && balance <= 1) {
+      await createNotification(userId, { type: "credits_low", title: "Credits sắp hết", body: `Bạn còn ${balance} credit. Mua Business Kit hoặc nâng cấp để nhận thêm credits.`, href: "/pricing" });
     }
   }
 

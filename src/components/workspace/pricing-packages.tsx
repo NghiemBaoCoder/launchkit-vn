@@ -71,7 +71,7 @@ export function PricingPackages({ businessId, packages, services, businessName }
             <Button variant={p.recommended ? "default" : "outline"} className="mt-5" onClick={() => setEditing(p)}><Pencil /> Chỉnh sửa gói</Button>
           </div>
         ))}
-        {packages.length === 0 ? <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground md:col-span-3">Chưa có gói giá. Tạo gói tuỳ chỉnh hoặc chạy "Tạo lại bảng giá".</div> : null}
+        {packages.length === 0 ? <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground md:col-span-3">Chưa có gói giá. Tạo gói tuỳ chỉnh hoặc chạy &ldquo;Tạo lại bảng giá&rdquo;.</div> : null}
       </div>
 
       {packages.length > 1 ? (

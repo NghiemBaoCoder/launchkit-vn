@@ -5,11 +5,12 @@ import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  const [offline, setOffline] = React.useState(false);
-  React.useEffect(() => {
-    setOffline(typeof navigator !== "undefined" && !navigator.onLine);
-    console.error(error);
-  }, [error]);
+  const offline = React.useSyncExternalStore(
+    (cb) => { window.addEventListener("online", cb); window.addEventListener("offline", cb); return () => { window.removeEventListener("online", cb); window.removeEventListener("offline", cb); }; },
+    () => !navigator.onLine,
+    () => false,
+  );
+  React.useEffect(() => { console.error(error); }, [error]);
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
       <div className="mb-6 flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">{offline ? <WifiOff className="size-8" /> : <AlertTriangle className="size-8" />}</div>

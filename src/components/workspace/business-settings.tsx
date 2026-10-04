@@ -3,7 +3,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Archive, ArchiveRestore, Copy, ImagePlus, Link2, RefreshCw, Save, Trash2, Upload } from "lucide-react";
+import { Archive, ArchiveRestore, ImagePlus, Link2, RefreshCw, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
