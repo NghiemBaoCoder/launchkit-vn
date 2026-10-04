@@ -1,3 +1,4 @@
+import { MaintenanceGate } from "@/components/app/maintenance-gate";
 import Link from "next/link";
 import { Rocket } from "lucide-react";
 import { SITE } from "@/lib/constants";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 export default async function WizardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   return (
+    <MaintenanceGate>
     <div className="surface-glow flex min-h-dvh flex-col">
       <header className="container-x flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-bold">
@@ -17,5 +19,6 @@ export default async function WizardLayout({ children }: { children: React.React
       </header>
       <main className="container-x flex-1 pb-16 pt-4">{children}</main>
     </div>
+    </MaintenanceGate>
   );
 }
