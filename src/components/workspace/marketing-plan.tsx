@@ -45,7 +45,7 @@ export function MarketingPlan({ businessId, items, readOnly, limitNote }: { busi
         <TabsContent value="calendar">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {weeks.map((week, w) => (
-              <div key={w} className="rounded-xl border bg-card">
+              <div key={w} className="min-w-0 rounded-xl border bg-card">
                 <div className="border-b px-3 py-2 text-sm font-semibold">Tuần {w + 1}</div>
                 <ul className="divide-y">
                   {week.length === 0 ? <li className="px-3 py-3 text-xs text-muted-foreground">Chưa có việc</li> : null}

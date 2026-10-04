@@ -73,7 +73,7 @@ export function ContentManager({ businessId, items, readOnly, lockedCount }: { b
             {dates.length === 0 ? <p className="py-8 text-center text-sm text-muted-foreground">Không có nội dung khớp bộ lọc.</p> : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {dates.map((d) => (
-                  <div key={d} className="rounded-xl border bg-card">
+                  <div key={d} className="min-w-0 rounded-xl border bg-card">
                     <div className="border-b px-3 py-2 text-sm font-semibold">{d === "none" ? "Chưa lên lịch" : formatDate(d, "EEEE, dd/MM")}</div>
                     <ul className="divide-y">
                       {byDate[d].map((i) => (

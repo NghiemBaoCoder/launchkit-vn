@@ -34,8 +34,8 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
   const nextActions = completion.items.filter((i) => !i.done).slice(0, 4);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="space-y-6 lg:col-span-2">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-3">
+      <div className="min-w-0 space-y-6 lg:col-span-2">
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div><CardTitle>Mức độ hoàn thiện</CardTitle><CardDescription>Dựa trên dữ liệu thực tế của business</CardDescription></div>
@@ -100,7 +100,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
         </Card>
       </div>
 
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         <Card>
           <CardHeader><CardTitle>Ảnh chụp business</CardTitle>{tagline ? <CardDescription className="italic">“{tagline}”</CardDescription> : null}</CardHeader>
           <CardContent className="space-y-3 text-sm">

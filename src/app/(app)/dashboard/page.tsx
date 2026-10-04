@@ -67,8 +67,8 @@ export default async function DashboardPage() {
         <StatCard label="Lượt tải xuống" value={downloads ?? 0} icon={Download} hint={`${exports?.length ?? 0} file sẵn sàng`} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-3">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
           <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <div><CardTitle>Business của tôi</CardTitle><CardDescription>Mở workspace để chỉnh sửa</CardDescription></div>
@@ -101,7 +101,7 @@ export default async function DashboardPage() {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <Card className="border-primary/30 bg-primary/5">
             <CardHeader><CardTitle>Việc nên làm tiếp</CardTitle></CardHeader>
             <CardContent>

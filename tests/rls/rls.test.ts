@@ -106,3 +106,28 @@ describe("RLS — chia sẻ public", () => {
     expect((await anonClient.from("shares").select("token")).data).toEqual([]);
   });
 });
+
+describe("Storage — chính sách thư mục theo user", () => {
+  const png = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82]);
+  it("user chỉ ghi được vào thư mục của mình trong bucket logos/avatars", async () => {
+    const own = await A.client.storage.from("logos").upload(`${A.id}/test-${stamp}.png`, png, { contentType: "image/png", upsert: true });
+    expect(own.error).toBeNull();
+    const other = await B.client.storage.from("logos").upload(`${A.id}/hack-${stamp}.png`, png, { contentType: "image/png", upsert: true });
+    expect(other.error).toBeTruthy();
+    const avatarOther = await B.client.storage.from("avatars").upload(`${A.id}/hack-${stamp}.png`, png, { contentType: "image/png" });
+    expect(avatarOther.error).toBeTruthy();
+    await admin.storage.from("logos").remove([`${A.id}/test-${stamp}.png`]);
+  });
+  it("bucket exports: chỉ chủ sở hữu đọc, user không tự upload", async () => {
+    const path = `${A.id}/${businessId}/kit-${stamp}.txt`;
+    const up = await admin.storage.from("exports").upload(path, Buffer.from("secret"), { contentType: "text/plain" });
+    expect(up.error).toBeNull();
+    const ownDl = await A.client.storage.from("exports").download(path);
+    expect(ownDl.error).toBeNull();
+    const otherDl = await B.client.storage.from("exports").download(path);
+    expect(otherDl.error).toBeTruthy();
+    const selfUp = await A.client.storage.from("exports").upload(`${A.id}/x-${stamp}.txt`, Buffer.from("x"), { contentType: "text/plain" });
+    expect(selfUp.error).toBeTruthy();
+    await admin.storage.from("exports").remove([path]);
+  });
+});
