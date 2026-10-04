@@ -135,7 +135,6 @@ export function SiteSettingsForm({ settings }: { settings: SiteSettings }) {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                     <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted/40">
                       {logoUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={logoUrl} alt="Logo" className="size-full object-contain" />
                       ) : (
                         <ImageIcon className="size-6 text-muted-foreground" />

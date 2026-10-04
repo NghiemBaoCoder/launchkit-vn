@@ -90,13 +90,13 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
               {tagline?.selected ? <p className="mt-4 text-xl font-medium">“{tagline.selected}”</p> : null}
               <p className="mt-3 text-muted-foreground">{kit.summary}</p>
               <div className="mt-4 flex flex-wrap gap-1.5">
-                {kit.tags.map((t) => (
-                  <Badge key={t} variant="secondary">{t}</Badge>
+                {kit.tags.map((t, idx) => (
+                  <Badge key={`${t}-${idx}`} variant="secondary">{t}</Badge>
                 ))}
               </div>
             </div>
             <nav aria-label="Các phần của kit" className="flex flex-wrap gap-1.5 lg:max-w-sm lg:justify-end">
-              {SECTIONS.map((s) => (
+              {SECTIONS.map((s, idx) => (
                 <a key={s.id} href={`#${s.id}`} className="rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground">
                   {s.label}
                 </a>
@@ -136,8 +136,8 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
               <div>
                 <h3 className="text-sm font-semibold">5 phương án tagline</h3>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {tagline.options.map((t) => (
-                    <span key={t} className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm", t === tagline.selected ? "border-primary bg-primary/10 font-medium text-primary" : "bg-card")}>
+                  {tagline.options.map((t, idx) => (
+                    <span key={`${t}-${idx}`} className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm", t === tagline.selected ? "border-primary bg-primary/10 font-medium text-primary" : "bg-card")}>
                       {t === tagline.selected ? <Check className="size-3.5" aria-hidden /> : null}
                       {t}
                     </span>
@@ -153,7 +153,7 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
                 <p className="mt-1 text-sm text-muted-foreground">{valueProp.subheadline}</p>
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   {valueProp.pillars?.map((p, i) => (
-                    <div key={p.title} className="rounded-xl bg-muted/40 p-4">
+                    <div key={`${p.title}-${i}`} className="rounded-xl bg-muted/40 p-4">
                       <span className="text-xs font-bold text-primary">0{i + 1}</span>
                       <p className="mt-1 font-semibold">{p.title}</p>
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{p.description}</p>
@@ -182,8 +182,8 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
                   <div>
                     <p className="text-xs font-semibold text-success">Mục tiêu</p>
                     <ul className="mt-1.5 space-y-1 text-sm">
-                      {persona.goals?.map((g) => (
-                        <li key={g} className="flex gap-2">
+                      {persona.goals?.map((g, idx) => (
+                        <li key={`${g}-${idx}`} className="flex gap-2">
                           <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden /> {g}
                         </li>
                       ))}
@@ -192,8 +192,8 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
                   <div>
                     <p className="text-xs font-semibold text-destructive">Nỗi đau</p>
                     <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm">
-                      {persona.pains?.map((p) => (
-                        <li key={p}>{p}</li>
+                      {persona.pains?.map((p, idx) => (
+                        <li key={`${p}-${idx}`}>{p}</li>
                       ))}
                     </ul>
                   </div>
@@ -235,8 +235,8 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
           {/* DỊCH VỤ */}
           <KitSection id="services" eyebrow="02 · Dịch vụ" title={`${services.length} dịch vụ được đóng gói`} description="Từ sản phẩm bạn nhập, hệ thống viết mô tả, phạm vi, thời gian bàn giao và gợi ý bán thêm.">
             <div className="grid gap-4 sm:grid-cols-2">
-              {services.map((s) => (
-                <div key={s.name} className="flex flex-col rounded-2xl border bg-card p-5 shadow-xs">
+              {services.map((s, idx) => (
+                <div key={`${s.name}-${idx}`} className="flex flex-col rounded-2xl border bg-card p-5 shadow-xs">
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="font-semibold">{s.name}</h3>
                     <div className="text-right">
@@ -247,8 +247,8 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.description}</p>
                   <ul className="mt-3 space-y-1 text-sm">
-                    {s.features.slice(0, 3).map((f) => (
-                      <li key={f} className="flex gap-2">
+                    {s.features.slice(0, 3).map((f, idx) => (
+                      <li key={`${f}-${idx}`} className="flex gap-2">
                         <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden /> {f}
                       </li>
                     ))}
@@ -264,7 +264,7 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
           {/* BẢNG GIÁ */}
           <KitSection id="pricing" eyebrow="03 · Bảng giá" title="3 gói giá với gói mỏ neo" description="Gói Tiêu chuẩn được làm nổi bật; gói Cao cấp tồn tại để gói Tiêu chuẩn trông hợp lý.">
             <div className="grid gap-4 md:grid-cols-3">
-              {pricing.packages.map((p) => (
+              {pricing.packages.map((p, idx) => (
                 <div key={p.tier} className={cn("relative flex flex-col rounded-2xl border bg-card p-5 shadow-xs", p.recommended && "border-primary ring-2 ring-primary/20")}>
                   {p.recommended ? <Badge className="absolute -top-3 left-5">Khuyến nghị</Badge> : null}
                   <h3 className="font-semibold">{p.name}</h3>
@@ -272,8 +272,8 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
                   <p className="mt-3 text-2xl font-bold tracking-tight">{formatVND(p.price)}</p>
                   <p className="text-xs text-muted-foreground">/ {p.billing_unit}</p>
                   <ul className="mt-4 space-y-1.5 text-sm">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex gap-2">
+                    {p.features.map((f, idx) => (
+                      <li key={`${f}-${idx}`} className="flex gap-2">
                         <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden /> {f}
                       </li>
                     ))}
@@ -296,8 +296,8 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
               </div>
             ) : null}
             <div className="grid gap-4 sm:grid-cols-2">
-              {objections.map((o) => (
-                <div key={o.objection} className="rounded-2xl border bg-card p-5 shadow-xs">
+              {objections.map((o, idx) => (
+                <div key={`${o.objection}-${idx}`} className="rounded-2xl border bg-card p-5 shadow-xs">
                   <p className="flex items-start gap-2 text-sm font-semibold">
                     <MessageSquare className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden /> “{o.objection}”
                   </p>
@@ -315,8 +315,8 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
                 <p className="leading-relaxed">{overview.summary}</p>
                 {overview.goals?.length ? (
                   <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                    {overview.goals.map((g) => (
-                      <li key={g} className="flex gap-2 text-sm">
+                    {overview.goals.map((g, idx) => (
+                      <li key={`${g}-${idx}`} className="flex gap-2 text-sm">
                         <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden /> {g}
                       </li>
                     ))}
@@ -389,7 +389,7 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
               </div>
             ) : null}
             <div className="flex flex-wrap gap-1.5">
-              {website.sections.map((s) => (
+              {website.sections.map((s, idx) => (
                 <Badge key={s.id} variant="outline" className="capitalize">{s.type.replace("_", " ")}</Badge>
               ))}
             </div>

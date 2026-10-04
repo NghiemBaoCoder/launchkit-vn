@@ -110,6 +110,7 @@ export function OnboardingWizard({ businessTypes, industries, isLoggedIn, server
       if (stepIdx >= 0) setStep(stepIdx);
       return;
     }
+    track("generator_complete", { path: "/onboarding", business_type: res.data.businessTypeSlug, industry: res.data.industrySlug });
     if (!isLoggedIn) {
       saveLocalDraft({ ...draft, step });
       router.push(`/register?next=${encodeURIComponent("/onboarding?resume=1")}`);

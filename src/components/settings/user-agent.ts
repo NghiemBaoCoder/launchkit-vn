@@ -21,7 +21,9 @@ export function parseUserAgent(ua: string | null | undefined): ParsedUserAgent {
   else if (/Chrome\//.test(s)) browser = "Chrome";
   else if (/Firefox\//.test(s)) browser = "Firefox";
   else if (/Safari\//.test(s) && /Version\//.test(s)) browser = "Safari";
-  else if (/node|undici|axios|curl|python|postman/i.test(s)) browser = "Ứng dụng / API";
+  // Đăng nhập qua server action → GoTrue ghi user-agent của Node (fetch/undici), không phải của trình duyệt.
+  else if (/^(node|undici)\b/i.test(s)) browser = "Đăng nhập web";
+  else if (/axios|curl|python|postman|okhttp|go-http/i.test(s)) browser = "Ứng dụng / API";
   else browser = "Trình duyệt khác";
 
   let os = "Không rõ";

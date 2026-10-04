@@ -177,7 +177,7 @@ async function finalizeJob(jobId: string, job: GenerationJob, stages: StageState
     href: `/business/${job.business_id}/overview`,
   });
   await logActivity({ userId: job.user_id, businessId: job.business_id, action: job.type === "full" ? "generation.completed" : "generation.section_completed", entityType: "generation_job", entityId: jobId, title: job.type === "full" ? "Tạo Business Kit hoàn tất" : `Tạo lại mục ${job.type}` });
-  await admin.from("analytics_events").insert({ user_id: job.user_id, event: "generator_complete", properties: { business_id: job.business_id, type: job.type } as JsonValue });
+  await admin.from("analytics_events").insert({ user_id: job.user_id, event: "generation_done", properties: { business_id: job.business_id, type: job.type } as JsonValue });
   return done!;
 }
 

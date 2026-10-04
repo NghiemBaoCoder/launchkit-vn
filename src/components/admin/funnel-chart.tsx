@@ -3,9 +3,9 @@ import type { FunnelStats } from "@/lib/data/admin-dashboard";
 
 const STEPS: { key: keyof FunnelStats; label: string; hint: string }[] = [
   { key: "landing", label: "Xem landing", hint: "Khách truy cập trang chủ" },
-  { key: "generator_start", label: "Bắt đầu tạo", hint: "Bấm bắt đầu onboarding" },
+  { key: "generator_start", label: "Bắt đầu tạo", hint: "Mở wizard onboarding" },
+  { key: "generator_complete", label: "Hoàn thành wizard", hint: "Trả lời xong 10 câu hỏi" },
   { key: "signup", label: "Đăng ký", hint: "Tạo tài khoản" },
-  { key: "generator_complete", label: "Tạo xong kit", hint: "Hoàn tất sinh nội dung" },
   { key: "preview", label: "Xem workspace", hint: "Mở workspace xem trước" },
   { key: "checkout", label: "Checkout", hint: "Tạo đơn hàng" },
   { key: "purchase", label: "Mua hàng", hint: "Đơn đã thanh toán" },

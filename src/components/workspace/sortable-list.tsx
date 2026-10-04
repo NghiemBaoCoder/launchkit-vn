@@ -17,6 +17,7 @@ interface SortableListProps<T extends { id: string }> {
 export function SortableList<T extends { id: string }>({ items, onReorder, renderItem, className, disabled }: SortableListProps<T>) {
   const [order, setOrder] = React.useState(items.map((i) => i.id));
   React.useEffect(() => setOrder(items.map((i) => i.id)), [items]);
+  const dndId = React.useId();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   const byId = new Map(items.map((i) => [i.id, i]));
 
@@ -29,7 +30,7 @@ export function SortableList<T extends { id: string }>({ items, onReorder, rende
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+    <DndContext id={dndId} sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext items={order} strategy={verticalListSortingStrategy}>
         <div className={cn("space-y-2", className)}>
           {order.map((id) => {

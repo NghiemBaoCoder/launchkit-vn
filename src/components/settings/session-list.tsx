@@ -12,6 +12,12 @@ export interface SessionRow {
   is_current: boolean;
 }
 
+/** Bỏ mask /32 (IPv4) hoặc /128 (IPv6) do cột inet trả về. */
+function formatIp(ip: string | null): string {
+  if (!ip) return "—";
+  return ip.replace(/\/(32|128)$/, "");
+}
+
 export function SessionList({ sessions }: { sessions: SessionRow[] }) {
   return (
     <ul className="divide-y">
@@ -29,7 +35,7 @@ export function SessionList({ sessions }: { sessions: SessionRow[] }) {
                 {s.is_current ? <Badge variant="success">Thiết bị này</Badge> : null}
               </div>
               <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                <span>IP {s.ip || "—"}</span>
+                <span>IP {formatIp(s.ip)}</span>
                 <span>Hoạt động {timeAgo(s.updated_at) || "—"}</span>
                 <span>Đăng nhập {formatDateTime(s.created_at)}</span>
               </div>
