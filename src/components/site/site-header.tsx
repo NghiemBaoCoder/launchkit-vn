@@ -16,8 +16,16 @@ const LINKS = [
 
 export function SiteHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
   const pathname = usePathname();
-  const [open, setOpen] = React.useState(false);
-  React.useEffect(() => setOpen(false), [pathname]);
+  // Lưu path lúc mở menu: đổi trang → open tự về false mà không cần setState trong effect.
+  const [openPath, setOpenPath] = React.useState<string | null>(null);
+  const open = openPath === pathname;
+  const setOpen = React.useCallback((next: boolean | ((prev: boolean) => boolean)) => {
+    setOpenPath((prev) => {
+      const prevOpen = prev === pathname;
+      const value = typeof next === "function" ? next(prevOpen) : next;
+      return value ? pathname : null;
+    });
+  }, [pathname]);
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
       <div className="container-x flex h-16 items-center justify-between gap-4">

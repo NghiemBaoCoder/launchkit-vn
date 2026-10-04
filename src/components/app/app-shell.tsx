@@ -2,7 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, CreditCard, Download, Gift, LayoutDashboard, Menu, Plus, Rocket, Settings, ShoppingBag, Shield } from "lucide-react";
+import { Download, LayoutDashboard, Menu, Rocket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SITE } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
@@ -14,15 +14,6 @@ import { UserMenu } from "./user-menu";
 import { NotificationsDropdown } from "./notifications-dropdown";
 import { CommandSearch } from "./command-search";
 import { ThemeToggle } from "./theme-toggle";
-
-const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/businesses", label: "Business của tôi", icon: Briefcase },
-  { href: "/dashboard/purchases", label: "Đơn hàng", icon: ShoppingBag },
-  { href: "/dashboard/billing", label: "Gói & thanh toán", icon: CreditCard },
-  { href: "/settings/referrals", label: "Giới thiệu bạn bè", icon: Gift },
-  { href: "/settings/profile", label: "Cài đặt", icon: Settings },
-];
 
 interface AppShellProps {
   profile: Profile;
@@ -38,26 +29,7 @@ export function AppShell({ profile, plan, unread, children, sidebar, sidebarTitl
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   React.useEffect(() => setMobileOpen(false), [pathname]);
-  const isAdmin = profile.role === "admin" || profile.role === "super_admin";
-
-  const nav = (
-    <nav className="flex flex-1 flex-col gap-1 p-3">
-      {NAV.map((item) => {
-        const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
-        return (
-          <Link key={item.href} href={item.href} className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors", active ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground")}>
-            <item.icon className="size-4" />
-            {item.label}
-          </Link>
-        );
-      })}
-      {isAdmin ? (
-        <Link href="/admin" className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors", pathname.startsWith("/admin") ? "bg-sidebar-accent" : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60")}>
-          <Shield className="size-4" /> Quản trị
-        </Link>
-      ) : null}
-    </nav>
-  );
+  const inWorkspace = /^\/business\/[^/]+/.test(pathname);
 
   const sidebarBody = (
     <div className="flex h-full flex-col">
@@ -67,22 +39,15 @@ export function AppShell({ profile, plan, unread, children, sidebar, sidebarTitl
           {SITE.name}
         </Link>
       </div>
-      {sidebar ? (
-        <div className="flex flex-1 flex-col overflow-y-auto">
-          {sidebarTitle ? <div className="px-4 pt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{sidebarTitle}</div> : null}
-          {sidebar}
+      <div className="flex flex-1 flex-col overflow-y-auto">
+        {sidebarTitle ? <div className="px-4 pt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{sidebarTitle}</div> : null}
+        {sidebar}
+        {inWorkspace ? (
           <div className="mt-auto border-t border-sidebar-border p-3">
             <Link href="/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent/60"><LayoutDashboard className="size-4" /> Về Dashboard</Link>
           </div>
-        </div>
-      ) : (
-        <>
-          <div className="p-3">
-            <Button asChild className="w-full"><Link href="/onboarding"><Plus /> Tạo business mới</Link></Button>
-          </div>
-          {nav}
-        </>
-      )}
+        ) : null}
+      </div>
       <div className="border-t border-sidebar-border p-4">
         <div className="flex items-center justify-between text-xs">
           <span className="font-medium">{PLAN_LABELS[plan]}</span>

@@ -9,14 +9,20 @@ interface PaginationProps {
   page: number;
   pageSize: number;
   total: number;
-  /** Hàm tạo href cho trang, ví dụ (p) => `?page=${p}` */
+  /** Hàm tạo href cho trang (chỉ dùng trong client component). */
   hrefFor?: (page: number) => string;
+  /**
+   * Dùng từ Server Component: đường dẫn kèm query hiện tại (không có tham số page),
+   * ví dụ "/admin/users?q=abc". Tham số `page` sẽ được nối thêm.
+   */
+  baseHref?: string;
   onPageChange?: (page: number) => void;
   className?: string;
 }
 
-function Pagination({ page, pageSize, total, hrefFor, onPageChange, className }: PaginationProps) {
+function Pagination({ page, pageSize, total, hrefFor: hrefForProp, baseHref, onPageChange, className }: PaginationProps) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const hrefFor = hrefForProp ?? (baseHref !== undefined ? (p: number) => `${baseHref}${baseHref.includes("?") ? "&" : "?"}page=${p}` : undefined);
   if (totalPages <= 1) return null;
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(total, page * pageSize);
