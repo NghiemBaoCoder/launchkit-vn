@@ -41,9 +41,15 @@ export interface ButtonProps
 }
 
 function Button({ className, variant, size, asChild = false, loading = false, children, disabled, ...props }: ButtonProps) {
-  const Comp = asChild ? Slot.Root : "button";
+  if (asChild) {
+    return (
+      <Slot.Root data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props}>
+        {children}
+      </Slot.Root>
+    );
+  }
   return (
-    <Comp
+    <button
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       disabled={disabled || loading}
@@ -51,8 +57,8 @@ function Button({ className, variant, size, asChild = false, loading = false, ch
       {...props}
     >
       {loading ? <Loader2 className="animate-spin" aria-hidden /> : null}
-      {asChild ? children : loading && size?.toString().startsWith("icon") ? null : children}
-    </Comp>
+      {loading && size?.toString().startsWith("icon") ? null : children}
+    </button>
   );
 }
 

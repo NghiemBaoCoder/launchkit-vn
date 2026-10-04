@@ -1,0 +1,56 @@
+import { chromium } from "@playwright/test";
+const base = "http://localhost:3000";
+const email = `test${Date.now()}@example.com`;
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome" });
+const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+page.on("pageerror", (e) => console.log("PAGEERROR", e.message));
+page.on("console", (m) => { if (m.type() === "error") console.log("CONSOLE", m.text().slice(0, 200)); });
+try {
+  await page.goto(`${base}/register`);
+  await page.fill('input[name="fullName"]', "Nguyễn Test");
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="password"]', "Password123!");
+  await page.check('input[type="checkbox"]');
+  await page.click('button[type="submit"]');
+  await page.waitForURL(/dashboard/, { timeout: 20000 });
+  console.log("registered ->", page.url());
+
+  await page.goto(`${base}/onboarding`);
+  await page.getByRole("button", { name: /^Bắt đầu$/ }).last().click();
+  await page.getByRole("button", { name: /Freelancer/ }).first().click();
+  await page.getByRole("button", { name: /Tiếp tục/ }).click();
+  await page.getByRole("button", { name: /Phát triển website/ }).first().click();
+  await page.getByRole("button", { name: /Tiếp tục/ }).click();
+  await page.fill("#businessName", "Minh Web Studio");
+  await page.fill("#location", "TP.HCM");
+  await page.getByRole("button", { name: /Tiếp tục/ }).click();
+  await page.fill("#targetCustomer", "Chủ spa nhỏ tại TP.HCM muốn có website nhận đặt lịch");
+  await page.getByRole("button", { name: /Tiếp tục/ }).click();
+  await page.fill('input[placeholder="Ví dụ: Thiết kế website"]', "Thiết kế website");
+  await page.getByRole("button", { name: /^Thêm$/ }).click();
+  await page.fill('input[placeholder="Ví dụ: Thiết kế website"]', "Landing page");
+  await page.getByRole("button", { name: /^Thêm$/ }).click();
+  await page.getByRole("button", { name: /Tiếp tục/ }).click();
+  await page.getByRole("button", { name: /Chuyên nghiệp/ }).first().click();
+  await page.getByRole("button", { name: /Thân thiện/ }).first().click();
+  await page.getByRole("button", { name: /Tiếp tục/ }).click();
+  await page.getByRole("button", { name: /Indigo/ }).first().click();
+  await page.getByRole("button", { name: /Tiếp tục/ }).click();
+  await page.getByRole("button", { name: /^Facebook$/ }).first().click();
+  await page.getByRole("button", { name: /^Zalo$/ }).first().click();
+  await page.getByRole("button", { name: /Tiếp tục/ }).click();
+  await page.getByRole("button", { name: /30 triệu/ }).first().click();
+  await page.getByRole("button", { name: /Tiếp tục/ }).click();
+  await page.getByRole("button", { name: /khách hàng đầu tiên/ }).first().click();
+  await page.getByRole("button", { name: /Tiếp tục/ }).click();
+  await page.getByRole("button", { name: /Tạo Business Kit/ }).click();
+  await page.waitForURL(/\/generate\//, { timeout: 20000 });
+  console.log("generate page ->", page.url());
+  await page.waitForSelector("text=Mở workspace", { timeout: 90000 });
+  console.log("generation completed");
+  await page.screenshot({ path: "/tmp/claude-0/-home-user-launchkit-vn/11daaf31-62ed-5f7b-9d24-257b866febdd/scratchpad/e2e/gen-done.png" });
+} catch (e) {
+  console.log("FAILED", e.message);
+  await page.screenshot({ path: "/tmp/claude-0/-home-user-launchkit-vn/11daaf31-62ed-5f7b-9d24-257b866febdd/scratchpad/e2e/fail.png" });
+}
+await browser.close();
