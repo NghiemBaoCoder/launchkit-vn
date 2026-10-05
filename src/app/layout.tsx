@@ -46,7 +46,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" suppressHydrationWarning className={`${beVietnam.variable} ${geistMono.variable} h-full`}>
+    <html lang="vi" suppressHydrationWarning data-scroll-behavior="smooth" className={`${beVietnam.variable} ${geistMono.variable} h-full`}>
       <body className="flex min-h-full flex-col font-sans">
         <Providers>{children}</Providers>
       </body>

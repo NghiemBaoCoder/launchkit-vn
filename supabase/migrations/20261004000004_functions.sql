@@ -84,7 +84,7 @@ begin
 
   -- Mỗi user là một affiliate tiềm năng
   insert into public.affiliates (user_id, code, status)
-  values (new.id, new_code, case when auto_approve then 'approved' else 'pending' end)
+  values (new.id, new_code, (case when auto_approve then 'approved' else 'pending' end)::public.affiliate_status)
   returning * into affiliate_row;
 
   if referrer is not null then

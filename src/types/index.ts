@@ -62,3 +62,6 @@ export function ok<T>(data: T, message?: string): ActionResult<T> {
 export function fail(error: string, code?: string, fieldErrors?: Record<string, string[]>): ActionResult<never> {
   return { ok: false, error, code, fieldErrors };
 }
+
+/** Giá trị jsonb không null (các cột `not null default '{}'`). */
+export type JsonValue = NonNullable<import("./database").Json>;

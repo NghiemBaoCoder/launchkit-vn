@@ -1,0 +1,42 @@
+// Kiểm tra tìm kiếm toàn cục (Ctrl+K) và dropdown thông báo (đọc / đọc tất cả).
+import { chromium } from "@playwright/test";
+const [email, password] = process.argv.slice(2);
+const base = "http://localhost:3000";
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome" });
+const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const errors = [];
+page.on("pageerror", (e) => errors.push("PAGEERROR " + e.message));
+page.on("console", (m) => { if (m.type() === "error") errors.push("CONSOLE " + m.text().slice(0, 200)); });
+await page.goto(`${base}/login`);
+await page.fill('input[name="email"]', email);
+await page.fill('input[name="password"]', password);
+await page.click('button[type="submit"]');
+await page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 20000 });
+await page.goto(`${base}/dashboard`, { waitUntil: "networkidle" });
+// Search
+await page.keyboard.press("Control+k");
+await page.getByPlaceholder(/Tìm business/).fill("Minh");
+await page.waitForTimeout(1200);
+const hits = await page.locator("[cmdk-item]").allTextContents();
+console.log("SEARCH hits:", hits.length, hits.slice(0, 4).map((h) => h.slice(0, 40)));
+const bizHit = page.locator("[cmdk-item]").filter({ hasText: "Minh Web Studio" }).first();
+await bizHit.click();
+await page.waitForURL(/\/business\//, { timeout: 15000 });
+console.log("SEARCH navigated:", page.url().includes("/overview") ? "ok" : page.url());
+// Notifications
+await page.goto(`${base}/dashboard`, { waitUntil: "networkidle" });
+const bell = page.getByRole("button", { name: /Thông báo/ });
+const label = await bell.getAttribute("aria-label");
+console.log("NOTIF label:", label);
+await bell.click();
+await page.waitForTimeout(1200);
+const items = await page.locator("[data-radix-popper-content-wrapper] li").count();
+console.log("NOTIF items:", items);
+await page.getByRole("button", { name: /Đọc tất cả/ }).click();
+await page.waitForTimeout(1500);
+const toast = await page.locator("[data-sonner-toast]").first().textContent().catch(() => "");
+console.log("NOTIF mark all toast:", toast?.slice(0, 60));
+await page.goto(`${base}/dashboard`, { waitUntil: "networkidle" });
+console.log("NOTIF label after:", await page.getByRole("button", { name: /Thông báo/ }).getAttribute("aria-label"));
+for (const e of errors) console.log(e);
+await browser.close();

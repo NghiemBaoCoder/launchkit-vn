@@ -4,7 +4,7 @@ import { formatVND } from "@/lib/utils";
 
 export function genMarketing(ctx: GenerationContext): MarketingOutput {
   const g = makeGen(ctx, "marketing");
-  const { profile, rng } = g;
+  const { profile } = g;
   const p = g.product.toLowerCase();
   const customer = g.fill("{customer}");
   const channels = ctx.answers.salesChannels.length ? ctx.answers.salesChannels : ["facebook", "referral"];
