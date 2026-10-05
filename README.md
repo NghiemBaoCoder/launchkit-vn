@@ -72,3 +72,13 @@ Xem `docs/ARCHITECTURE.md` (quy ước server actions, phân quyền, thanh toá
 ## Vai trò & quyền
 
 `user` → `admin` → `super_admin` (lưu ở `profiles.role`, đồng bộ vào JWT bằng trigger). `/admin/*` bị chặn ở `proxy.ts` và kiểm tra lại trên DB trong layout/actions; RLS từ chối mọi truy vấn admin từ user thường (có test).
+
+## Deploy tự động bằng script
+
+`scripts/deploy.sh` thực hiện toàn bộ: link Supabase → push migrations → seed → tạo user mẫu → set env Vercel → deploy production. Đặt các biến môi trường được liệt kê ở đầu script (không dán vào chat/commit), rồi chạy:
+
+```bash
+pnpm install && ./scripts/deploy.sh
+```
+
+Không dùng CLI? Dán `supabase/dist/full-schema.sql` vào Supabase SQL Editor, import repo vào Vercel và đặt env như `.env.example`.
