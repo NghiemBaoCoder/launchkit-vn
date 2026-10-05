@@ -65,3 +65,20 @@ export async function doThingAction(input): Promise<ActionResult<T>> {
 ## Sinh nội dung
 - `generation_jobs.stages` jsonb; client gọi `advanceGenerationAction(jobId)` lặp lại, mỗi lần xử lý 1 stage (an toàn serverless). Retry: `retryGenerationAction`.
 - Asset: `business_assets(category,key,content jsonb)` + `business_asset_versions` (lịch sử). Ghi qua `upsertAsset()` trong `src/lib/ai/persist.ts`.
+
+## Trang public tĩnh (ISR)
+
+- Mọi trang trong `src/app/(site)` export `revalidate`; KHÔNG gọi `cookies()`/`headers()`/`getCurrentUser()` trong layout hoặc page của nhóm này.
+- Dữ liệu công khai (catalog, `app_settings.site`) đọc qua `createPublicClient()` (`src/lib/supabase/public.ts`); dữ liệu theo người dùng đọc ở client (`SiteHeader`, `ContactForm`, `MaintenanceScreen`) hoặc trong nhóm `(app)`.
+- Server action thay đổi catalog/sản phẩm/cài đặt phải gọi `revalidatePath("/", "layout")`.
+
+## Chuyển động & hình ảnh
+
+- Dùng `m.*` từ `motion/react` bên trong `MotionProvider` (LazyMotion `domAnimation`, strict) — không import `motion.*` để giữ bundle nhỏ.
+- Ưu tiên `Reveal`/`Stagger` cho hiệu ứng khi cuộn, CSS keyframes (`animate-float`, `animate-marquee`, `animate-aurora`…) cho vòng lặp vô tận; mọi hiệu ứng phải có fallback khi `prefers-reduced-motion`.
+- Không dùng ảnh stock: `KitCover` (gradient theo bảng màu + hình học theo seed) cho ảnh bìa, `illustrations.tsx` cho minh hoạ, `next/og` cho ảnh chia sẻ.
+
+## Sinh nội dung nền
+
+- `BackgroundGeneration` (mount ở layout `(app)`) tiếp tục gọi `advanceGenerationAction` cho job `pending/processing` khi người dùng ở bất kỳ trang nào trong app; trang `/generate/[id]` có vòng lặp riêng nên component này bỏ qua tại đó.
+

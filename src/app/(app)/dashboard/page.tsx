@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Briefcase, Coins, Download, Plus, ShoppingBag, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, Briefcase, Coins, Download, Plus, ShoppingBag, Sparkles, Zap, Activity, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/auth";
 import { getAccessContext } from "@/lib/access/server";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatVND, initials, timeAgo } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard" };
@@ -24,13 +25,18 @@ function greeting() {
 
 export default async function DashboardPage() {
   const [profile, ctx, supabase] = await Promise.all([requireProfile(), getAccessContext(), createClient()]);
-  const [{ data: businesses }, { data: orders }, { data: activity }, { data: exports }, { count: downloads }] = await Promise.all([
+  const [bizRes, ordersRes, activityRes, exportsRes, { count: downloads }] = await Promise.all([
     supabase.from("businesses").select("id, name, status, logo_url, updated_at, business_types(name)").eq("user_id", profile.id).neq("status", "archived").order("updated_at", { ascending: false }).limit(6),
     supabase.from("orders").select("id, order_number, status, total, paid_at, created_at, business_id, products(name)").eq("user_id", profile.id).eq("status", "paid").order("paid_at", { ascending: false }).limit(5),
     supabase.from("activity_logs").select("id, action, title, created_at, business_id").eq("user_id", profile.id).order("created_at", { ascending: false }).limit(8),
     supabase.from("exports").select("id, title, format, status, created_at, business_id").eq("user_id", profile.id).eq("status", "ready").order("created_at", { ascending: false }).limit(5),
     supabase.from("downloads").select("id", { count: "exact", head: true }).eq("user_id", profile.id),
   ]);
+  const businesses = bizRes.data;
+  const orders = ordersRes.data;
+  const activity = activityRes.data;
+  const exports = exportsRes.data;
+  const loadError = [bizRes.error, ordersRes.error, activityRes.error, exportsRes.error].find(Boolean);
   const biz = businesses ?? [];
   const primary = biz[0];
   const canCreateMore = can(ctx, "business.multiple") || biz.length < 1;
@@ -46,6 +52,13 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
+      {loadError ? (
+        <Alert variant="destructive">
+          <AlertTriangle />
+          <AlertTitle>Không tải được một phần dữ liệu</AlertTitle>
+          <AlertDescription>{loadError.message}. Hãy tải lại trang; nếu vẫn lỗi, liên hệ hỗ trợ.</AlertDescription>
+        </Alert>
+      ) : null}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{greeting()},</p>
@@ -94,7 +107,7 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader><CardTitle>Hoạt động gần đây</CardTitle></CardHeader>
             <CardContent>
-              {!activity?.length ? <p className="text-sm text-muted-foreground">Chưa có hoạt động. Hãy tạo business đầu tiên.</p> : (
+              {!activity?.length ? <EmptyState compact icon={Activity} title="Chưa có hoạt động" description="Mọi thao tác tạo, chỉnh sửa và xuất kit sẽ hiện ở đây." action={biz.length === 0 ? <Button asChild size="sm"><Link href="/onboarding">Tạo business đầu tiên</Link></Button> : undefined} /> : (
                 <ul className="space-y-3">{activity.map((a) => (<li key={a.id} className="flex items-start gap-3 text-sm"><span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" /><span className="min-w-0 flex-1"><span className="block truncate">{a.title ?? a.action}</span><span className="text-xs text-muted-foreground">{timeAgo(a.created_at)}</span></span>{a.business_id ? <Link href={`/business/${a.business_id}/overview`} className="text-xs text-primary hover:underline">Mở</Link> : null}</li>))}</ul>
               )}
             </CardContent>
@@ -119,7 +132,7 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0"><CardTitle>Tải xuống</CardTitle></CardHeader>
             <CardContent>
-              {!exports?.length ? <p className="text-sm text-muted-foreground">Chưa có file nào. Xuất kit từ workspace → Tải xuống.</p> : (
+              {!exports?.length ? <EmptyState compact icon={Download} title="Chưa có file nào" description="Xuất PDF / CSV / Markdown từ workspace → Tải xuống." action={primary ? <Button asChild size="sm" variant="outline"><Link href={`/business/${primary.id}/downloads`}>Mở Tải xuống</Link></Button> : undefined} /> : (
                 <ul className="divide-y text-sm">{exports.map((e) => (<li key={e.id} className="flex items-center justify-between gap-2 py-2"><div className="min-w-0"><div className="truncate font-medium">{e.title}</div><div className="text-xs text-muted-foreground">{e.format.toUpperCase()} · {timeAgo(e.created_at)}</div></div><Button asChild size="sm" variant="outline"><a href={`/api/exports/${e.id}/download`} target="_blank" rel="noreferrer"><Download /></a></Button></li>))}</ul>
               )}
             </CardContent>

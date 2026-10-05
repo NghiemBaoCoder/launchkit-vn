@@ -16,6 +16,16 @@ if (email && email !== "-") {
 }
 for (const u of urls) {
   const res = await page.goto(`${base}${u}`, { waitUntil: "networkidle" });
+  // Cuộn qua toàn trang để các hiệu ứng hiện-khi-cuộn chạy trước khi chụp.
+  await page.evaluate(async () => {
+    const step = window.innerHeight * 0.8;
+    for (let y = 0; y < document.body.scrollHeight; y += step) {
+      window.scrollTo({ top: y, behavior: "instant" });
+      await new Promise((r) => setTimeout(r, 120));
+    }
+    window.scrollTo({ top: 0, behavior: "instant" });
+    await new Promise((r) => setTimeout(r, 900));
+  });
   const name = u.replace(/[^a-z0-9]+/gi, "_").slice(0, 60);
   await page.screenshot({ path: `/tmp/claude-0/-home-user-launchkit-vn/11daaf31-62ed-5f7b-9d24-257b866febdd/scratchpad/e2e/${name}.png`, fullPage: true });
   console.log(res?.status(), page.url(), `-> ${name}.png`);

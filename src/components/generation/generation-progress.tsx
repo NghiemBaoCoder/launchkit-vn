@@ -144,7 +144,7 @@ export function GenerationProgress({ initialJob, businessId, businessName, credi
           ) : failed ? (
             <><Button size="lg" onClick={retry}><RefreshCw /> Thử lại</Button><Button asChild variant="outline" size="lg"><Link href="/dashboard">Về dashboard</Link></Button></>
           ) : (
-            <Button asChild variant="outline"><Link href="/dashboard">Về dashboard (tiếp tục chạy nền)</Link></Button>
+            <Button asChild variant="outline"><Link href="/dashboard">Về dashboard — kit tiếp tục được tạo trong lúc bạn dùng app</Link></Button>
           )}
         </div>
       </div>

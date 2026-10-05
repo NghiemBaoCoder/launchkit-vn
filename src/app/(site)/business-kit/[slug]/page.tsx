@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { getBusinessTypeBySlug, getBusinessTypes, getIndustries } from "@/lib/data/catalog";
 import { getExampleBySlug } from "@/lib/examples";
 import { CatalogIcon } from "@/components/site/catalog-icon";
+import { KitCover } from "@/components/site/kit-cover";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
+import { COLOR_PALETTES } from "@/lib/onboarding/schema";
 import { Section, SectionHeading, CtaBanner } from "@/components/site/section";
 import { KIT_MODULES } from "@/components/site/kit-modules";
 import { getTypeDetail } from "@/components/site/business-type-data";
@@ -14,7 +17,22 @@ import { TestimonialGrid, pickTestimonials } from "@/components/site/testimonial
 import { FaqList } from "@/components/site/faq-list";
 import { HOME_FAQ } from "@/components/site/faq-data";
 
+/** ISR: trang public được cache và làm mới mỗi 600s (admin đổi dữ liệu sẽ revalidate ngay). */
+export const revalidate = 600;
+
 type Params = { params: Promise<{ slug: string }> };
+
+export async function generateStaticParams() {
+  const types = await getBusinessTypes();
+  return types.map((t) => ({ slug: t.slug }));
+}
+
+
+function paletteFor(slug: string) {
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+  return COLOR_PALETTES[h % COLOR_PALETTES.length];
+}
 
 function stringList(json: unknown): string[] {
   return Array.isArray(json) ? json.filter((x): x is string => typeof x === "string") : [];
@@ -51,13 +69,19 @@ export default async function BusinessTypeLandingPage({ params }: Params) {
   const onboardingHref = `/onboarding?type=${bt.slug}`;
   const insideKeys = new Set(detail.inside.map((i) => i.moduleKey));
   const otherModules = KIT_MODULES.filter((m) => !insideKeys.has(m.key));
+  const palette = paletteFor(bt.slug);
 
   return (
     <>
       {/* Hero */}
-      <section className="surface-glow border-b">
-        <div className="container-x grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-[1.1fr_1fr] lg:py-24">
-          <div className="max-w-xl">
+      <section className="relative overflow-hidden border-b">
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-grid mask-fade-b opacity-60" />
+          <div className="absolute -left-32 -top-32 size-[30rem] rounded-full blur-3xl animate-aurora" style={{ background: `${palette.primary}26` }} />
+          <div className="absolute -right-24 top-10 size-[26rem] rounded-full blur-3xl animate-aurora [animation-delay:-6s]" style={{ background: `${palette.accent}22` }} />
+        </div>
+        <div className="container-x grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[1.1fr_1fr] lg:py-24">
+          <Reveal immediate className="max-w-xl">
             <div className="flex items-center gap-3">
               <span className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
                 <CatalogIcon name={bt.icon} className="size-6" />
@@ -86,17 +110,31 @@ export default async function BusinessTypeLandingPage({ params }: Params) {
               )}
             </div>
             <p className="mt-4 text-sm text-muted-foreground">Dành cho {detail.audience}.</p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {highlights.map((h, i) => (
-              <div key={h} className="flex gap-3 rounded-2xl border bg-card/90 p-4 shadow-xs backdrop-blur animate-slide-up" style={{ animationDelay: `${i * 80}ms` }}>
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-success/12 text-success">
-                  <Check className="size-4" aria-hidden />
-                </span>
-                <p className="text-sm font-medium">{h}</p>
+          </Reveal>
+          <Reveal immediate direction="scale" delay={0.1}>
+            <div className="relative">
+              <div aria-hidden className="absolute -inset-4 rounded-[2rem] bg-gradient-to-tr from-primary/15 via-transparent to-fuchsia-400/15 blur-2xl" />
+              <div className="relative overflow-hidden rounded-3xl border bg-card shadow-2xl">
+                <KitCover name={bt.name} palette={palette} icon={bt.icon} seed={bt.slug} size="hero" className="h-44 sm:h-52">
+                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <p className="text-xs font-semibold uppercase tracking-wider opacity-85">Business Kit</p>
+                    <p className="text-2xl font-bold leading-tight">{bt.name}</p>
+                    {bt.tagline ? <p className="mt-1 text-sm opacity-90">{bt.tagline}</p> : null}
+                  </div>
+                </KitCover>
+                <Stagger as="ul" className="grid gap-2 p-4 sm:grid-cols-2" gap={0.07} delay={0.3}>
+                  {highlights.map((h) => (
+                    <StaggerItem as="li" key={h} className="flex gap-3 rounded-xl border bg-background p-3">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-success/12 text-success">
+                        <Check className="size-4" aria-hidden />
+                      </span>
+                      <p className="text-sm font-medium">{h}</p>
+                    </StaggerItem>
+                  ))}
+                </Stagger>
               </div>
-            ))}
-          </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -112,7 +150,7 @@ export default async function BusinessTypeLandingPage({ params }: Params) {
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {typeIndustries.map((ind) => (
-                <Link key={ind.id} href={onboardingHref} className="group flex items-center gap-3 rounded-xl border bg-card px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
+                <Link key={ind.id} href={onboardingHref} className="group flex min-w-0 items-center gap-3 overflow-hidden rounded-xl border bg-card px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent/40">
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground group-hover:bg-primary group-hover:text-primary-foreground">
                     <CatalogIcon name={ind.icon} className="size-4" />
                   </span>

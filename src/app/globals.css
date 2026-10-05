@@ -129,6 +129,16 @@
   --animate-slide-up: slide-up 0.3s ease-out both;
   --animate-shimmer: shimmer 1.6s linear infinite;
   --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 9s ease-in-out infinite;
+  --animate-gradient: gradient-shift 8s ease infinite;
+  --animate-aurora: aurora 14s ease-in-out infinite alternate;
+  --animate-scroll-y: scroll-y 14s ease-in-out infinite;
+  --animate-draw: draw 1.6s ease-out forwards;
+  --animate-spin-slow: spin 18s linear infinite;
+  --animate-ping-soft: ping-soft 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-shine: shine 2.8s ease-in-out infinite;
 
   @keyframes fade-in {
     from { opacity: 0; }
@@ -146,6 +156,40 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.55; }
   }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(0.6deg); }
+  }
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  @keyframes aurora {
+    0% { transform: translate3d(-6%, -4%, 0) scale(1); }
+    50% { transform: translate3d(5%, 6%, 0) scale(1.08); }
+    100% { transform: translate3d(-3%, 8%, 0) scale(0.96); }
+  }
+  @keyframes scroll-y {
+    0%, 12% { transform: translateY(0); }
+    45%, 55% { transform: translateY(calc(-100% + var(--viewport-h, 320px))); }
+    88%, 100% { transform: translateY(0); }
+  }
+  @keyframes draw {
+    from { stroke-dashoffset: var(--path-length, 1000); }
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes ping-soft {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.9); opacity: 0; }
+  }
+  @keyframes shine {
+    0% { transform: translateX(-120%) skewX(-12deg); }
+    60%, 100% { transform: translateX(220%) skewX(-12deg); }
+  }
 }
 
 @layer base {
@@ -161,6 +205,45 @@
   }
   ::selection {
     background: color-mix(in oklch, var(--primary) 20%, transparent);
+  }
+  /* Không có JS (bot, trình duyệt cũ): nội dung dùng hiệu ứng hiện-khi-cuộn vẫn phải nhìn thấy */
+  html:not(.js) [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  /* Tôn trọng người dùng tắt hiệu ứng chuyển động */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  /* Bảng dữ liệu trên màn hình hẹp: cột đầu dính trái để vẫn biết đang xem dòng nào khi cuộn ngang */
+  @media (max-width: 767px) {
+    [data-slot="table-container"] {
+      scrollbar-width: thin;
+    }
+    [data-slot="table-container"] th:first-child,
+    [data-slot="table-container"] td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: color-mix(in oklch, var(--card) 94%, transparent);
+      backdrop-filter: blur(6px);
+      box-shadow: 6px 0 10px -8px color-mix(in oklch, var(--foreground) 25%, transparent);
+    }
+  }
+  /* Thiết bị cảm ứng: vùng chạm tối thiểu ~44px cho nút & link dạng nút */
+  @media (pointer: coarse) {
+    button, [role="button"], a[data-slot="button"], input[type="checkbox"], input[type="radio"] {
+      min-height: 44px;
+    }
+    [data-slot="button"][class*="size-9"], [data-slot="button"][class*="size-8"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
   }
 }
 
@@ -192,5 +275,78 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+  /* Vùng an toàn (notch / thanh home) */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .h-safe-bottom {
+    height: env(safe-area-inset-bottom, 0px);
+  }
+  /* Nền lưới / chấm trang trí */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklch, var(--foreground) 6%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklch, var(--foreground) 6%, transparent) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .bg-dots {
+    background-image: radial-gradient(color-mix(in oklch, var(--foreground) 10%, transparent) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  }
+  .mask-fade-edges {
+    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  }
+  /* Gradient động cho chữ / nền */
+  .gradient-animated {
+    background-size: 200% 200%;
+    animation: var(--animate-gradient);
+  }
+  /* Hiệu ứng kính */
+  .glass {
+    background: color-mix(in oklch, var(--card) 72%, transparent);
+    backdrop-filter: blur(14px) saturate(1.3);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  }
+  /* Viền gradient mảnh */
+  .ring-gradient {
+    position: relative;
+  }
+  .ring-gradient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, color-mix(in oklch, var(--primary) 60%, transparent), transparent 40%, color-mix(in oklch, var(--chart-3) 50%, transparent));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  /* Chữ tiêu đề co giãn theo màn hình */
+  .text-hero {
+    font-size: clamp(2.125rem, 1.2rem + 3.6vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  /* Vệt sáng lướt qua (nút CTA) */
+  .shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    animation: var(--animate-shine);
+    pointer-events: none;
   }
 }

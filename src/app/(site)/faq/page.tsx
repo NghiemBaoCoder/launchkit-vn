@@ -6,6 +6,9 @@ import { FAQ_GROUPS } from "@/components/site/faq-data";
 import { FaqList } from "@/components/site/faq-list";
 import { Section, PageIntro } from "@/components/site/section";
 
+/** ISR: trang public được cache và làm mới mỗi 3600s (admin đổi dữ liệu sẽ revalidate ngay). */
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Câu hỏi thường gặp",
   description: "Giải đáp về Business Kit, thanh toán và hoàn tiền, tài khoản, xuất file, website kit và AI tạo nội dung.",

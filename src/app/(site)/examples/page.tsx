@@ -5,8 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EXAMPLE_KITS, getExampleKit, findAsset } from "@/lib/examples";
 import { paletteByKey } from "@/lib/onboarding/schema";
+import { getBusinessTypes, getIndustries } from "@/lib/data/catalog";
 import { CatalogIcon } from "@/components/site/catalog-icon";
+import { KitCover } from "@/components/site/kit-cover";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 import { PageIntro, Section, CtaBanner } from "@/components/site/section";
+
+/** ISR: trang public được cache và làm mới mỗi 3600s (admin đổi dữ liệu sẽ revalidate ngay). */
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Ví dụ Business Kit",
@@ -24,7 +30,10 @@ const TYPE_ICON: Record<string, string> = {
   "local-service": "Wrench",
 };
 
-export default function ExamplesPage() {
+export default async function ExamplesPage() {
+  const [types, industries] = await Promise.all([getBusinessTypes(), getIndustries()]);
+  const typeCount = types.length || 8;
+  const industryCount = industries.length || 38;
   const kits = EXAMPLE_KITS.map((kit) => {
     const generated = getExampleKit(kit.slug);
     const tagline = generated ? (findAsset(generated.brand.assets, "tagline")?.content as { selected?: string } | undefined)?.selected : undefined;
@@ -37,21 +46,21 @@ export default function ExamplesPage() {
       <PageIntro eyebrow="Ví dụ thật" title="6 Business Kit mẫu, 6 cách kinh doanh khác nhau" description="Mỗi ví dụ được tạo từ một bộ câu trả lời thật của một business giả định. Bấm vào để xem thương hiệu, bảng giá, kịch bản bán hàng, marketing, nội dung và website kit được sinh ra như thế nào." />
       <Section>
         <div className="container-x">
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {kits.map(({ kit, tagline, palette, serviceCount }, i) => (
-              <Link key={kit.slug} href={`/examples/${kit.slug}`} className="group flex flex-col overflow-hidden rounded-2xl border bg-card shadow-xs transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
-                <div className="relative h-28 overflow-hidden" style={{ background: `linear-gradient(135deg, ${palette.primary} 0%, ${palette.secondary} 70%, ${palette.accent} 100%)` }}>
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.35),transparent_55%)]" aria-hidden />
-                  <div className="absolute bottom-3 left-5 flex items-center gap-2 text-white">
-                    <span className="flex size-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
+          <Stagger className="grid gap-5 md:grid-cols-2 lg:grid-cols-3" gap={0.08}>
+            {kits.map(({ kit, tagline, palette, serviceCount }) => (
+              <StaggerItem key={kit.slug} className="flex">
+              <Link href={`/examples/${kit.slug}`} className="group flex w-full flex-col overflow-hidden rounded-2xl border bg-card shadow-xs transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg">
+                <KitCover name={kit.name} palette={palette} icon={TYPE_ICON[kit.businessTypeSlug]} seed={kit.slug} hideMark className="h-32 transition-transform duration-500 group-hover:scale-[1.02]">
+                  <div className="absolute bottom-3 left-5 right-5 flex items-center gap-2 text-white">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/20 ring-1 ring-white/30 backdrop-blur">
                       <CatalogIcon name={TYPE_ICON[kit.businessTypeSlug]} className="size-5" />
                     </span>
-                    <div>
-                      <p className="text-xs/none opacity-85">{kit.businessTypeName} · {kit.industryName}</p>
-                      <p className="text-lg font-bold leading-tight">{kit.name}</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs/none opacity-85">{kit.businessTypeName} · {kit.industryName}</p>
+                      <p className="truncate text-lg font-bold leading-tight">{kit.name}</p>
                     </div>
                   </div>
-                </div>
+                </KitCover>
                 <div className="flex flex-1 flex-col p-5">
                   {tagline ? (
                     <p className="flex items-start gap-1.5 text-sm font-medium">
@@ -72,17 +81,18 @@ export default function ExamplesPage() {
                   </div>
                 </div>
               </Link>
+              </StaggerItem>
             ))}
-          </div>
-          <div className="mt-12 rounded-2xl border border-dashed bg-muted/30 p-6 text-center">
+          </Stagger>
+          <Reveal className="mt-12 rounded-2xl border border-dashed bg-muted/30 p-6 text-center">
             <p className="font-medium">Không thấy ngành của bạn?</p>
-            <p className="mt-1 text-sm text-muted-foreground">LaunchKit hỗ trợ 8 loại hình và 38 ngành. Nội dung luôn được viết từ mô tả của chính bạn.</p>
+            <p className="mt-1 text-sm text-muted-foreground">LaunchKit hỗ trợ {typeCount} loại hình và {industryCount} ngành. Nội dung luôn được viết từ mô tả của chính bạn.</p>
             <Button asChild className="mt-4">
               <Link href="/onboarding">
                 Tạo kit cho ngành của bạn <ArrowRight />
               </Link>
             </Button>
-          </div>
+          </Reveal>
         </div>
       </Section>
       <Section className="pt-0">

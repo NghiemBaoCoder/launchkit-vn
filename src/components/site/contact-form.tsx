@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { sendContactMessageAction } from "@/lib/actions/contact";
+import { createClient } from "@/lib/supabase/client";
 
 const TOPIC_OPTIONS = [
   { value: "support", label: "Hỗ trợ sử dụng" },
@@ -37,6 +38,24 @@ export function ContactForm({ defaultEmail = "", defaultName = "" }: { defaultEm
     resolver: zodResolver(schema),
     defaultValues: { name: defaultName, email: defaultEmail, topic: "support", message: "" },
   });
+
+  // Điền sẵn tên/email từ phiên đăng nhập (đọc ở trình duyệt để trang vẫn tĩnh).
+  React.useEffect(() => {
+    let active = true;
+    createClient()
+      .auth.getSession()
+      .then(({ data }) => {
+        const user = data.session?.user;
+        if (!active || !user) return;
+        const fullName = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "";
+        if (!form.getValues("email") && user.email) form.setValue("email", user.email);
+        if (!form.getValues("name") && fullName) form.setValue("name", fullName);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [form]);
 
   async function onSubmit(values: Values) {
     setServerError(null);

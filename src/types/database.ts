@@ -306,6 +306,31 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"contact_messages": {
+                  Row: {
+                    "admin_note": string | null,"created_at": string,"email": string,"handled_at": string | null,"handled_by": string | null,"id": string,"message": string,"name": string,"status": Database["public"]['Enums']["contact_status"],"topic": string,"updated_at": string,"user_id": string | null
+                  }
+                  Insert: {
+                    "admin_note"?: string | null,"created_at"?: string,"email": string,"handled_at"?: string | null,"handled_by"?: string | null,"id"?: string,"message": string,"name": string,"status"?: Database["public"]['Enums']["contact_status"],"topic"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "admin_note"?: string | null,"created_at"?: string,"email"?: string,"handled_at"?: string | null,"handled_by"?: string | null,"id"?: string,"message"?: string,"name"?: string,"status"?: Database["public"]['Enums']["contact_status"],"topic"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "contact_messages_handled_by_fkey"
+      columns: ["handled_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "contact_messages_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"content_items": {
                   Row: {
                     "business_id": string,"caption": string | null,"content_type": string,"created_at": string,"cta": string | null,"hook": string | null,"id": string,"platform": Database["public"]['Enums']["content_platform"],"published_at": string | null,"scheduled_date": string | null,"sort_order": number,"status": Database["public"]['Enums']["content_status"],"title": string,"updated_at": string
@@ -977,7 +1002,7 @@ isOneToOne: true
                            }
           }
           Enums: {
-            "affiliate_status": "pending"|"approved"|"rejected"|"paid","asset_category": "brand"|"services"|"pricing"|"sales"|"marketing"|"content"|"website"|"finance"|"operations"|"documents","business_status": "draft"|"generating"|"ready"|"archived","checklist_kind": "launch"|"daily"|"weekly"|"customer_workflow"|"sales_workflow"|"delivery_workflow","commission_status": "pending"|"approved"|"paid"|"rejected","content_platform": "facebook"|"tiktok"|"instagram"|"threads","content_status": "idea"|"draft"|"ready"|"published","coupon_type": "fixed"|"percentage","document_type": "quotation"|"proposal"|"service_agreement"|"client_brief"|"invoice"|"intake_form","export_format": "pdf"|"csv"|"txt"|"md"|"zip","export_status": "pending"|"processing"|"ready"|"failed","finance_calc_type": "startup_cost"|"monthly_expenses"|"revenue_target"|"profit"|"break_even","job_status": "pending"|"processing"|"completed"|"failed","order_status": "pending"|"paid"|"failed"|"expired"|"refunded","payment_status": "pending"|"processing"|"succeeded"|"failed"|"refunded","pricing_tier": "basic"|"standard"|"premium"|"custom","product_kind": "free"|"one_time"|"subscription","subscription_status": "active"|"canceled"|"expired"|"past_due","template_category": "brand"|"pricing"|"sales"|"marketing"|"content"|"website"|"operations"|"documents","user_role": "user"|"admin"|"super_admin","user_status": "active"|"suspended"
+            "affiliate_status": "pending"|"approved"|"rejected"|"paid","asset_category": "brand"|"services"|"pricing"|"sales"|"marketing"|"content"|"website"|"finance"|"operations"|"documents","business_status": "draft"|"generating"|"ready"|"archived","checklist_kind": "launch"|"daily"|"weekly"|"customer_workflow"|"sales_workflow"|"delivery_workflow","commission_status": "pending"|"approved"|"paid"|"rejected","contact_status": "new"|"read"|"replied"|"archived","content_platform": "facebook"|"tiktok"|"instagram"|"threads","content_status": "idea"|"draft"|"ready"|"published","coupon_type": "fixed"|"percentage","document_type": "quotation"|"proposal"|"service_agreement"|"client_brief"|"invoice"|"intake_form","export_format": "pdf"|"csv"|"txt"|"md"|"zip","export_status": "pending"|"processing"|"ready"|"failed","finance_calc_type": "startup_cost"|"monthly_expenses"|"revenue_target"|"profit"|"break_even","job_status": "pending"|"processing"|"completed"|"failed","order_status": "pending"|"paid"|"failed"|"expired"|"refunded","payment_status": "pending"|"processing"|"succeeded"|"failed"|"refunded","pricing_tier": "basic"|"standard"|"premium"|"custom","product_kind": "free"|"one_time"|"subscription","subscription_status": "active"|"canceled"|"expired"|"past_due","template_category": "brand"|"pricing"|"sales"|"marketing"|"content"|"website"|"operations"|"documents","user_role": "user"|"admin"|"super_admin","user_status": "active"|"suspended"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1097,7 +1122,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "affiliate_status": ["pending", "approved", "rejected", "paid"],"asset_category": ["brand", "services", "pricing", "sales", "marketing", "content", "website", "finance", "operations", "documents"],"business_status": ["draft", "generating", "ready", "archived"],"checklist_kind": ["launch", "daily", "weekly", "customer_workflow", "sales_workflow", "delivery_workflow"],"commission_status": ["pending", "approved", "paid", "rejected"],"content_platform": ["facebook", "tiktok", "instagram", "threads"],"content_status": ["idea", "draft", "ready", "published"],"coupon_type": ["fixed", "percentage"],"document_type": ["quotation", "proposal", "service_agreement", "client_brief", "invoice", "intake_form"],"export_format": ["pdf", "csv", "txt", "md", "zip"],"export_status": ["pending", "processing", "ready", "failed"],"finance_calc_type": ["startup_cost", "monthly_expenses", "revenue_target", "profit", "break_even"],"job_status": ["pending", "processing", "completed", "failed"],"order_status": ["pending", "paid", "failed", "expired", "refunded"],"payment_status": ["pending", "processing", "succeeded", "failed", "refunded"],"pricing_tier": ["basic", "standard", "premium", "custom"],"product_kind": ["free", "one_time", "subscription"],"subscription_status": ["active", "canceled", "expired", "past_due"],"template_category": ["brand", "pricing", "sales", "marketing", "content", "website", "operations", "documents"],"user_role": ["user", "admin", "super_admin"],"user_status": ["active", "suspended"]
+            "affiliate_status": ["pending", "approved", "rejected", "paid"],"asset_category": ["brand", "services", "pricing", "sales", "marketing", "content", "website", "finance", "operations", "documents"],"business_status": ["draft", "generating", "ready", "archived"],"checklist_kind": ["launch", "daily", "weekly", "customer_workflow", "sales_workflow", "delivery_workflow"],"commission_status": ["pending", "approved", "paid", "rejected"],"contact_status": ["new", "read", "replied", "archived"],"content_platform": ["facebook", "tiktok", "instagram", "threads"],"content_status": ["idea", "draft", "ready", "published"],"coupon_type": ["fixed", "percentage"],"document_type": ["quotation", "proposal", "service_agreement", "client_brief", "invoice", "intake_form"],"export_format": ["pdf", "csv", "txt", "md", "zip"],"export_status": ["pending", "processing", "ready", "failed"],"finance_calc_type": ["startup_cost", "monthly_expenses", "revenue_target", "profit", "break_even"],"job_status": ["pending", "processing", "completed", "failed"],"order_status": ["pending", "paid", "failed", "expired", "refunded"],"payment_status": ["pending", "processing", "succeeded", "failed", "refunded"],"pricing_tier": ["basic", "standard", "premium", "custom"],"product_kind": ["free", "one_time", "subscription"],"subscription_status": ["active", "canceled", "expired", "past_due"],"template_category": ["brand", "pricing", "sales", "marketing", "content", "website", "operations", "documents"],"user_role": ["user", "admin", "super_admin"],"user_status": ["active", "suspended"]
           }
         }
 } as const

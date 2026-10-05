@@ -48,6 +48,7 @@ export type Feature =
   | "services.full"
   | "pricing.full"
   | "pricing.calculators"
+  | "pricing.calculators.basic"
   | "sales.full"
   | "marketing.full"
   | "content.full"
@@ -68,6 +69,8 @@ export const FEATURE_REQUIREMENTS: Record<Feature, EntitlementKey[]> = {
   "services.full": ["services_full"],
   "pricing.full": ["pricing_full"],
   "pricing.calculators": ["pricing_full"],
+  // Máy tính cơ bản miễn phí cho mọi tài khoản (spec: FREE USER → basic calculators); lưu/đồng bộ cần pricing_full.
+  "pricing.calculators.basic": [],
   "sales.full": ["sales_full"],
   "marketing.full": ["marketing_full"],
   "content.full": ["content_30"],
@@ -123,6 +126,7 @@ export function hasEntitlement(ctx: AccessContext, key: EntitlementKey): boolean
 export function can(ctx: AccessContext, feature: Feature): boolean {
   if (ctx.isAdmin) return true;
   const required = FEATURE_REQUIREMENTS[feature];
+  if (required.length === 0) return true; // tính năng miễn phí
   return required.some((k) => hasEntitlement(ctx, k));
 }
 

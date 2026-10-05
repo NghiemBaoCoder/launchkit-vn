@@ -48,6 +48,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="vi" suppressHydrationWarning data-scroll-behavior="smooth" className={`${beVietnam.variable} ${geistMono.variable} h-full`}>
       <body className="flex min-h-full flex-col font-sans">
+        {/* Đánh dấu có JS trước khi vẽ: CSS dùng html:not(.js) để hiện nội dung reveal khi không có JS */}
+        <script dangerouslySetInnerHTML={{ __html: 'document.documentElement.classList.add("js")' }} />
         <Providers>{children}</Providers>
       </body>
     </html>

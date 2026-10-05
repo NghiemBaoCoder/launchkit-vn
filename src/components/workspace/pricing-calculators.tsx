@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,7 +21,7 @@ interface CalcState {
   sell_price?: number;
 }
 
-export function PricingCalculators({ asset, anchorPrice }: { asset: BusinessAsset | undefined; anchorPrice: number }) {
+export function PricingCalculators({ asset, anchorPrice, readOnly = false, upgradeHref = "/pricing" }: { asset: BusinessAsset | undefined; anchorPrice: number; readOnly?: boolean; upgradeHref?: string }) {
   const router = useRouter();
   const initial = React.useMemo<CalcState>(() => {
     const c = (asset?.content ?? {}) as Partial<CalcState>;
@@ -39,6 +40,7 @@ export function PricingCalculators({ asset, anchorPrice }: { asset: BusinessAsse
   const margin = sell > 0 ? profit / sell : 0;
 
   async function save() {
+    if (readOnly) return toast.info("Mở khoá Business Kit để lưu máy tính và đồng bộ với bảng giá.");
     if (!asset) return toast.error("Chưa có dữ liệu máy tính. Hãy tạo lại bảng giá.");
     setSaving(true);
     const res = await updateAssetAction({ assetId: asset.id, content: { ...(asset.content as Record<string, unknown>), ...state } });
@@ -87,7 +89,14 @@ export function PricingCalculators({ asset, anchorPrice }: { asset: BusinessAsse
             <div className="flex justify-between text-base font-bold"><dt>Biên lợi nhuận</dt><dd className={margin >= state.target_margin ? "text-success" : "text-warning-foreground"}>{(margin * 100).toFixed(1)}%</dd></div>
           </dl>
           <p className="text-xs text-muted-foreground">{margin >= state.target_margin ? "Đạt biên lợi nhuận mục tiêu." : `Thấp hơn mục tiêu ${Math.round(state.target_margin * 100)}%. Cân nhắc tăng giá hoặc giảm chi phí.`}</p>
-          <div className="flex justify-end"><Button onClick={save} loading={saving} disabled={!asset}><Save /> Lưu máy tính</Button></div>
+          {readOnly ? (
+            <div className="flex flex-col items-start justify-between gap-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3 text-sm sm:flex-row sm:items-center">
+              <span className="text-muted-foreground">Bạn đang dùng <strong className="text-foreground">máy tính cơ bản</strong> (gói miễn phí). Mở khoá để lưu kết quả, đồng bộ với bảng giá và xem chiến lược định giá đầy đủ.</span>
+              <Button asChild size="sm" variant="premium"><Link href={upgradeHref}>Mở khoá</Link></Button>
+            </div>
+          ) : (
+            <div className="flex justify-end"><Button onClick={save} loading={saving} disabled={!asset}><Save /> Lưu máy tính</Button></div>
+          )}
         </CardContent>
       </Card>
     </div>

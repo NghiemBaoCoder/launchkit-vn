@@ -3,6 +3,9 @@ import Link from "next/link";
 import { LegalDocument, type LegalSection } from "@/components/site/legal-document";
 import { SITE } from "@/lib/constants";
 
+/** ISR: trang public được cache và làm mới mỗi 3600s (admin đổi dữ liệu sẽ revalidate ngay). */
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Chính sách bảo mật",
   description: "Cách LaunchKit VN thu thập, sử dụng, lưu trữ và bảo vệ dữ liệu cá nhân và dữ liệu business của bạn.",

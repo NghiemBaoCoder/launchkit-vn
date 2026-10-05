@@ -108,12 +108,20 @@ export function TestimonialCard({ item, index = 0, className }: { item: Testimon
   );
 }
 
+/** Ghi chú minh bạch: các câu chuyện là kịch bản sử dụng điển hình (bản demo). */
+export function TestimonialNote({ className }: { className?: string }) {
+  return <p className={cn("text-center text-xs text-muted-foreground", className)}>Câu chuyện minh hoạ dựa trên các kịch bản sử dụng điển hình của sản phẩm. Kết quả thực tế tuỳ thuộc vào ngành và cách bạn triển khai.</p>;
+}
+
 export function TestimonialGrid({ items, className }: { items: Testimonial[]; className?: string }) {
   return (
-    <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-3", className)}>
-      {items.map((t, i) => (
-        <TestimonialCard key={t.name} item={t} index={i} />
-      ))}
+    <div className={className}>
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {items.map((t, i) => (
+          <TestimonialCard key={t.name} item={t} index={i} />
+        ))}
+      </div>
+      <TestimonialNote className="mt-6" />
     </div>
   );
 }

@@ -13,6 +13,7 @@ if (email !== "-") {
 }
 for (const u of urls) {
   const res = await page.goto(`${base}${u}`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1200); // chờ hiệu ứng hiện xong
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
   const name = "m" + u.replace(/[^a-z0-9]+/gi, "_").slice(0, 50);
   await page.screenshot({ path: `/tmp/claude-0/-home-user-launchkit-vn/11daaf31-62ed-5f7b-9d24-257b866febdd/scratchpad/e2e/${name}.png`, fullPage: false });

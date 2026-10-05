@@ -52,9 +52,22 @@ Mã giảm giá demo: `DEMO50` (−50%), `LAUNCH100K` (−100.000đ), `FREEKIT` 
 
 Chromium cho Playwright: `PW_CHROMIUM_PATH=/path/to/chrome pnpm test:e2e` nếu không muốn `npx playwright install`.
 
+## Hiệu năng & trang public
+
+- Toàn bộ nhóm `(site)` (trang chủ, ví dụ, bảng giá, landing theo loại hình, FAQ, pháp lý, liên hệ) được **prerender / ISR** (`revalidate` 10–60 phút): dữ liệu catalog & cài đặt site đọc qua `createPublicClient()` (anon, không cookie) nên không có truy vấn nào chạy trên mỗi request. Admin đổi sản phẩm/loại hình/cài đặt → `revalidatePath("/", "layout")` làm mới ngay.
+- Trạng thái đăng nhập của header và chế độ bảo trì (bypass cho admin) được xác định ở trình duyệt từ phiên Supabase, giữ layout public tĩnh.
+- `getCurrentUser()` dùng `getClaims()` (xác thực JWT cục bộ) thay cho `getUser()` gọi mạng; `vercel.json` ghim region `sin1` — đổi cho khớp region Supabase của bạn (`hnd1` Tokyo, `iad1` US East…).
+- Ảnh OG/Twitter sinh động bằng `next/og` (`src/app/opengraph-image.tsx`, `/business-kit/[slug]`, `/examples/[slug]`), `icon.svg`, `apple-icon`, `manifest`, `sitemap.xml`, `robots.txt`.
+
+## Giao diện & chuyển động
+
+- `src/components/motion/*`: `Reveal`/`Stagger` (hiện khi cuộn), `AnimatedNumber`, `TiltCard`, `RotatingWords`, `Marquee` — dựa trên `motion` (LazyMotion, gói `domAnimation`), tôn trọng `prefers-reduced-motion`.
+- Hình ảnh thuần SVG/UI: `HeroVisual` (workspace đang tạo kit, parallax), `KitCover` (ảnh bìa sinh theo bảng màu + seed), `BrowserFrame`/`PhoneFrame` (mockup thiết bị), bộ `illustrations.tsx` cho how-it-works, auth, 404/403/500/offline.
+- Mobile: thanh tab đáy trong app (`MobileTabBar`, chừa safe-area), vùng chạm ≥ 44px trên thiết bị cảm ứng, cột đầu của bảng dính trái khi cuộn ngang, tiêu đề hero co giãn theo `clamp()`.
+
 ## Deploy lên Vercel + Supabase cloud
 
-1. Tạo project Supabase, chạy migrations: `supabase link --project-ref <ref> && supabase db push`, rồi chạy `supabase/seed.sql` (SQL editor) và `pnpm seed:users` với env trỏ tới cloud.
+1. Tạo project Supabase, chạy migrations: `supabase link --project-ref <ref> && supabase db push`, rồi chạy `supabase/seed.sql` (SQL editor) và `pnpm seed:users` với env trỏ tới cloud. Không dùng CLI? Dán `supabase/dist/full-schema.sql` vào SQL Editor. **Đã cài bản cũ** → chạy thêm `supabase/dist/upgrade-20261004000007-contact-messages.sql` (hộp thư liên hệ `/admin/messages`).
 2. Supabase Auth → URL Configuration: Site URL = domain Vercel; Redirect URLs thêm `https://<domain>/auth/callback` và `https://<domain>/**`. Bật xác thực email nếu muốn (`/verify-email` đã sẵn sàng). Google OAuth: bật provider và đặt `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true`.
 3. Vercel → Environment Variables: như `.env.local` (đổi URL/keys, `NEXT_PUBLIC_APP_URL=https://<domain>`).
 4. `pnpm build` chạy sạch; không cần cấu hình thêm (Turbopack mặc định).

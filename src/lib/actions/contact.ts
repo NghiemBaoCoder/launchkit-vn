@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { fail, ok, type ActionResult } from "@/types";
 import { getCurrentUser } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { logActivity } from "@/lib/data/activity";
 
 const CONTACT_TOPICS = ["support", "billing", "partnership", "feedback", "other"] as const;
@@ -17,9 +18,9 @@ const contactSchema = z.object({
 export type ContactInput = z.input<typeof contactSchema>;
 
 /**
- * Nhận tin nhắn liên hệ từ website. Khách chưa đăng nhập vẫn gửi được:
- * bản ghi được lưu vào activity_logs (action = contact.message) bằng service role
- * vì RLS chỉ cho phép người dùng đã đăng nhập tự ghi log của mình.
+ * Nhận tin nhắn liên hệ từ website. Khách chưa đăng nhập vẫn gửi được: ghi vào
+ * contact_messages bằng service role (RLS không mở insert cho anon), admin xử lý ở /admin/messages.
+ * Nếu DB chưa chạy migration contact_messages → rơi về activity_logs để không mất tin.
  */
 export async function sendContactMessageAction(input: ContactInput): Promise<ActionResult<undefined>> {
   const parsed = contactSchema.safeParse(input);
@@ -29,13 +30,21 @@ export async function sendContactMessageAction(input: ContactInput): Promise<Act
   const { name, email, topic, message } = parsed.data;
   try {
     const user = await getCurrentUser();
-    await logActivity({
-      userId: user?.id ?? null,
-      action: "contact.message",
-      entityType: "contact",
-      title: `Liên hệ: ${name} (${topic})`,
-      metadata: { name, email, topic, message, user_email: user?.email ?? null },
-    });
+    const admin = createAdminClient();
+    // Chống spam đơn giản: tối đa 5 tin / email / giờ.
+    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count, error: countError } = await admin.from("contact_messages").select("id", { count: "exact", head: true }).eq("email", email).gte("created_at", since);
+    if (!countError && (count ?? 0) >= 5) return fail("Bạn đã gửi quá nhiều tin trong 1 giờ. Vui lòng thử lại sau.", "rate_limited");
+
+    const { error } = await admin.from("contact_messages").insert({ user_id: user?.id ?? null, name, email, topic, message });
+    if (error) {
+      // 42P01: bảng chưa tồn tại (chưa chạy migration) → fallback.
+      if (error.code === "42P01" || /contact_messages/.test(error.message)) {
+        await logActivity({ userId: user?.id ?? null, action: "contact.message", entityType: "contact", title: `Liên hệ: ${name} (${topic})`, metadata: { name, email, topic, message, user_email: user?.email ?? null } });
+      } else {
+        throw new Error(error.message);
+      }
+    }
     return ok(undefined, "Đã gửi");
   } catch {
     return fail("Không gửi được tin nhắn lúc này, vui lòng thử lại sau.", "server");
