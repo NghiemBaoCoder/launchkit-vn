@@ -65,23 +65,23 @@ export const EXPERIENCE_LEVELS = [
 ] as const;
 
 export const onboardingAnswersSchema = z.object({
-  businessTypeSlug: z.string().min(1, "Chọn loại hình kinh doanh"),
-  industrySlug: z.string().min(1, "Chọn ngành"),
+  businessTypeSlug: z.string({ error: "Chọn loại hình kinh doanh" }).min(1, "Chọn loại hình kinh doanh"),
+  industrySlug: z.string({ error: "Chọn ngành" }).min(1, "Chọn ngành"),
   industryCustom: z.string().max(80).optional().default(""),
-  businessName: z.string().trim().min(2, "Tên business tối thiểu 2 ký tự").max(80, "Tối đa 80 ký tự"),
+  businessName: z.string({ error: "Nhập tên business" }).trim().min(2, "Tên business tối thiểu 2 ký tự").max(80, "Tối đa 80 ký tự"),
   ownerName: z.string().trim().max(80).optional().default(""),
   location: z.string().trim().max(80).optional().default(""),
   description: z.string().trim().max(500).optional().default(""),
   experience: z.enum(["new", "some", "experienced"]).default("new"),
-  targetCustomer: z.string().trim().min(5, "Mô tả khách hàng mục tiêu (ít nhất 5 ký tự)").max(500),
+  targetCustomer: z.string({ error: "Mô tả khách hàng mục tiêu" }).trim().min(5, "Mô tả khách hàng mục tiêu (ít nhất 5 ký tự)").max(500),
   customerSegment: z.enum(["individual", "smb", "both"]).default("individual"),
   customerPainPoints: z.string().trim().max(500).optional().default(""),
-  products: z.array(z.string().trim().min(1).max(80)).min(1, "Thêm ít nhất 1 sản phẩm / dịch vụ").max(8),
-  brandPersonality: z.array(z.string()).min(1, "Chọn ít nhất 1 tính cách").max(4, "Tối đa 4 tính cách"),
-  colorPalette: z.string().min(1, "Chọn một bảng màu"),
-  salesChannels: z.array(z.string()).min(1, "Chọn ít nhất 1 kênh bán hàng"),
-  revenueTarget: z.number().int().min(1000000, "Mục tiêu doanh thu tối thiểu 1 triệu"),
-  primaryGoal: z.string().min(1, "Chọn mục tiêu chính"),
+  products: z.array(z.string().trim().min(1).max(80), { error: "Thêm ít nhất 1 sản phẩm / dịch vụ" }).min(1, "Thêm ít nhất 1 sản phẩm / dịch vụ").max(8),
+  brandPersonality: z.array(z.string(), { error: "Chọn ít nhất 1 tính cách" }).min(1, "Chọn ít nhất 1 tính cách").max(4, "Tối đa 4 tính cách"),
+  colorPalette: z.string({ error: "Chọn một bảng màu" }).min(1, "Chọn một bảng màu"),
+  salesChannels: z.array(z.string(), { error: "Chọn ít nhất 1 kênh bán hàng" }).min(1, "Chọn ít nhất 1 kênh bán hàng"),
+  revenueTarget: z.number({ error: "Chọn mục tiêu doanh thu" }).int().min(1000000, "Mục tiêu doanh thu tối thiểu 1 triệu"),
+  primaryGoal: z.string({ error: "Chọn mục tiêu chính" }).min(1, "Chọn mục tiêu chính"),
 });
 
 export type OnboardingAnswers = z.infer<typeof onboardingAnswersSchema>;
