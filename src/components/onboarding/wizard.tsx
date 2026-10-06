@@ -175,6 +175,11 @@ export function OnboardingWizard({ businessTypes, industries, isLoggedIn, server
         {current.key === "business_type" && (
           <div className="space-y-4">
             <StepHeading title="Bạn đang kinh doanh theo hình thức nào?" description="Chọn loại hình gần nhất. Bạn có thể đổi sau." />
+            {businessTypes.length === 0 ? (
+              <div className="rounded-lg border border-warning/50 bg-warning/10 p-4 text-sm text-warning-foreground">
+                Chưa có dữ liệu loại hình kinh doanh. Hệ thống chưa được nạp danh mục (chạy <code className="rounded bg-background px-1">supabase/seed.sql</code>) hoặc quản trị viên chưa thêm loại hình trong Quản trị → Loại hình. Vui lòng liên hệ hỗ trợ.
+              </div>
+            ) : null}
             <div className="grid gap-3 sm:grid-cols-2">
               {businessTypes.map((bt) => selectableCard(bt.slug, draft.businessTypeSlug === bt.slug, () => { update("businessTypeSlug", bt.slug); update("industrySlug", ""); }, (
                 <>

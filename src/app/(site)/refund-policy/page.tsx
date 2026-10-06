@@ -3,6 +3,9 @@ import Link from "next/link";
 import { LegalDocument, type LegalSection } from "@/components/site/legal-document";
 import { SITE } from "@/lib/constants";
 
+/** ISR: trang public được cache và làm mới mỗi 3600s (admin đổi dữ liệu sẽ revalidate ngay). */
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Chính sách hoàn tiền",
   description: "Hoàn tiền 100% trong 7 ngày cho Business Kit nếu bạn chưa xuất hoặc tải xuống tài liệu. Điều kiện, cách yêu cầu và thời gian xử lý.",

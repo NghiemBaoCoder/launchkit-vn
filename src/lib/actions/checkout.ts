@@ -5,9 +5,9 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AuthError, requireProfileAction } from "@/lib/auth";
-import { env } from "@/lib/env";
 import { logActivity } from "@/lib/data/activity";
-import { MOCK_SIGNATURE_HEADER, signMockPayload } from "@/lib/payments/mock-provider";
+import { signMockPayload } from "@/lib/payments/mock-provider";
+import { processMockWebhook } from "@/lib/payments/webhook";
 import { checkOwnership, createOrderForUser, findActiveProduct, isUuid } from "@/lib/payments/orders";
 import { computeTotal, effectivePrice, validateCoupon } from "@/lib/payments/pricing";
 import { randomToken } from "@/lib/utils";
@@ -191,20 +191,11 @@ export async function simulateMockPaymentAction(paymentId: string, outcome: "suc
   };
   const raw = JSON.stringify(payload);
   const signature = signMockPayload(raw);
-  let res: Response;
-  try {
-    res = await fetch(`${env.appUrl}/api/payments/webhook/mock`, {
-      method: "POST",
-      headers: { "content-type": "application/json", [MOCK_SIGNATURE_HEADER]: signature },
-      body: raw,
-      cache: "no-store",
-    });
-  } catch (e) {
-    return fail(`Không gọi được webhook: ${e instanceof Error ? e.message : "lỗi mạng"}`);
-  }
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    return fail(`Webhook trả về lỗi ${res.status}${text ? `: ${text.slice(0, 120)}` : ""}`);
+  // Gọi thẳng bộ xử lý webhook trong cùng tiến trình (vẫn xác thực chữ ký) — không phụ thuộc
+  // self-fetch qua mạng, vốn hay lỗi trên serverless khi NEXT_PUBLIC_APP_URL sai hoặc bị chặn.
+  const result = await processMockWebhook(raw, signature);
+  if (!result.body.ok) {
+    return fail(`Cổng thanh toán mock trả về lỗi ${result.status}${result.body.error ? `: ${result.body.error}` : ""}`);
   }
   revalidatePath("/dashboard/purchases");
   revalidatePath("/dashboard/billing");

@@ -3,7 +3,8 @@ import { ArrowRight, Check, Clock, Lock, MessageSquare, Quote, Sparkles, User } 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatVND, initials, cn } from "@/lib/utils";
-import { BRAND_PERSONALITIES, SALES_CHANNELS } from "@/lib/onboarding/schema";
+import { BRAND_PERSONALITIES, SALES_CHANNELS, paletteByKey } from "@/lib/onboarding/schema";
+import { KitCover } from "./kit-cover";
 import { findAsset, type GeneratedExample } from "@/lib/examples";
 import { PaletteSwatches } from "./asset-content-view";
 import { CatalogIcon } from "./catalog-icon";
@@ -69,6 +70,7 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
   const personalities = kit.answers.brandPersonality.map((k) => BRAND_PERSONALITIES.find((p) => p.key === k)?.label ?? k);
   const channels = kit.answers.salesChannels.map((k) => SALES_CHANNELS.find((c) => c.key === k)?.label ?? k);
   const onboardingHref = `/onboarding?type=${kit.businessTypeSlug}`;
+  const cover = paletteByKey(kit.answers.colorPalette);
 
   return (
     <div className="pb-24 lg:pb-0">
@@ -76,7 +78,20 @@ export function ExampleKitView({ example }: { example: GeneratedExample }) {
       <div className="surface-glow border-b">
         <div className="container-x py-12 sm:py-16">
           <Link href="/examples" className="text-sm text-muted-foreground hover:text-foreground">← Tất cả ví dụ</Link>
-          <div className="mt-4 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <KitCover name={kit.name} palette={cover} icon={TYPE_ICON[kit.businessTypeSlug]} seed={kit.slug} hideMark className="mt-4 h-36 rounded-3xl shadow-lg sm:h-44">
+            <div className="absolute bottom-4 left-5 right-5 flex flex-wrap items-end justify-between gap-3 text-white">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider opacity-85">Ví dụ Business Kit</p>
+                <p className="text-sm opacity-90">{kit.businessTypeName} · {kit.industryName}</p>
+              </div>
+              <div className="flex gap-1.5">
+                {[cover.primary, cover.secondary, cover.accent].map((c) => (
+                  <span key={c} className="size-6 rounded-full ring-2 ring-white/60" style={{ background: c }} aria-hidden />
+                ))}
+              </div>
+            </div>
+          </KitCover>
+          <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <div className="flex items-center gap-3">
                 <span className="flex size-12 items-center justify-center rounded-2xl text-white shadow-md" style={{ background: `linear-gradient(135deg, ${website.theme.primary}, ${website.theme.secondary})` }}>

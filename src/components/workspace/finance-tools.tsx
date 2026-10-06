@@ -96,7 +96,7 @@ export function RevenueTargetTool({ businessId, initial }: { businessId: string;
           <div className="space-y-1.5"><Label>Giá trị đơn trung bình</Label><Input type="number" step={100000} value={s.avg_order_value} onChange={(e) => setS((v) => ({ ...v, avg_order_value: Number(e.target.value) }))} /></div>
           <div className="space-y-1.5"><Label>Tỷ lệ chốt ({Math.round(s.conversion_rate * 100)}%)</Label><input type="range" min={5} max={80} value={Math.round(s.conversion_rate * 100)} onChange={(e) => setS((v) => ({ ...v, conversion_rate: Number(e.target.value) / 100 }))} className="mt-3 w-full accent-primary" /></div>
         </div>
-        <div className="grid grid-cols-3 gap-3 text-center">
+        <div className="grid grid-cols-1 gap-3 text-center sm:grid-cols-3">
           <div className="rounded-lg bg-muted/40 p-3"><div className="text-2xl font-bold">{customers}</div><div className="text-xs text-muted-foreground">khách / tháng</div></div>
           <div className="rounded-lg bg-muted/40 p-3"><div className="text-2xl font-bold">{leads}</div><div className="text-xs text-muted-foreground">khách tiềm năng / tháng</div></div>
           <div className="rounded-lg bg-muted/40 p-3"><div className="text-2xl font-bold">{Math.ceil(leads / 4.3)}</div><div className="text-xs text-muted-foreground">khách tiềm năng / tuần</div></div>

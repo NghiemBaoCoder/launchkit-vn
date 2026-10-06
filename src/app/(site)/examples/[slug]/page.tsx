@@ -5,6 +5,9 @@ import { EXAMPLE_KITS, getExampleBySlug, getExampleKit } from "@/lib/examples";
 import { AnalyticsTracker } from "@/components/app/analytics-tracker";
 import { ExampleKitView } from "@/components/site/example-kit-view";
 
+/** ISR: trang public được cache và làm mới mỗi 3600s (admin đổi dữ liệu sẽ revalidate ngay). */
+export const revalidate = 3600;
+
 type Params = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {

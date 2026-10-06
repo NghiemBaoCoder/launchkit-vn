@@ -4,9 +4,13 @@ import { ArrowRight, Check, Download, FileDown, Link2, LoaderCircle, PenLine, Re
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GENERATION_STAGES } from "@/lib/ai/types";
+import { Reveal } from "@/components/motion/reveal";
 import { Section, SectionHeading, CtaBanner, PageIntro } from "@/components/site/section";
 import { KIT_MODULES, EXPORT_FORMATS } from "@/components/site/kit-modules";
 import { cn } from "@/lib/utils";
+
+/** ISR: trang public được cache và làm mới mỗi 3600s (admin đổi dữ liệu sẽ revalidate ngay). */
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Cách hoạt động",
@@ -233,7 +237,9 @@ export default function HowItWorksPage() {
 
       <Section className="border-y bg-muted/30" id="stages">
         <div className="container-x">
-          <SectionHeading eyebrow="11 giai đoạn tạo nội dung" title="Mỗi giai đoạn, một phần của kit" description="Thứ tự được thiết kế để phần sau kế thừa phần trước: bảng giá dùng dịch vụ, kịch bản bán hàng dùng định vị, website dùng tất cả." />
+          <Reveal>
+            <SectionHeading eyebrow="11 giai đoạn tạo nội dung" title="Mỗi giai đoạn, một phần của kit" description="Thứ tự được thiết kế để phần sau kế thừa phần trước: bảng giá dùng dịch vụ, kịch bản bán hàng dùng định vị, website dùng tất cả." />
+          </Reveal>
           <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {GENERATION_STAGES.map((s, i) => {
               const mod = KIT_MODULES.find((m) => m.key === s.key);
@@ -260,7 +266,9 @@ export default function HowItWorksPage() {
       <Section id="editable">
         <div className="container-x grid gap-12 lg:grid-cols-2">
           <div>
-            <SectionHeading align="left" eyebrow="Chỉnh sửa được gì" title="Mọi thứ. Thật đấy." description="Nội dung tạo tự động là điểm bắt đầu, không phải điểm kết thúc. Bạn luôn là người quyết định cuối cùng." />
+            <Reveal>
+              <SectionHeading align="left" eyebrow="Chỉnh sửa được gì" title="Mọi thứ. Thật đấy." description="Nội dung tạo tự động là điểm bắt đầu, không phải điểm kết thúc. Bạn luôn là người quyết định cuối cùng." />
+            </Reveal>
             <ul className="mt-8 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
               {EDITABLE.map((e) => (
                 <li key={e} className="flex gap-2 rounded-xl border bg-card px-4 py-3 text-sm">
@@ -270,7 +278,9 @@ export default function HowItWorksPage() {
             </ul>
           </div>
           <div>
-            <SectionHeading align="left" eyebrow="Định dạng xuất" title="Mang kit đi bất cứ đâu" description="Xuất từng phần hoặc trọn bộ. File được tạo trong vài giây và lưu ở mục Tải xuống." />
+            <Reveal>
+              <SectionHeading align="left" eyebrow="Định dạng xuất" title="Mang kit đi bất cứ đâu" description="Xuất từng phần hoặc trọn bộ. File được tạo trong vài giây và lưu ở mục Tải xuống." />
+            </Reveal>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {EXPORT_FORMATS.map((f) => (
                 <div key={f.key} className="flex gap-3 rounded-xl border bg-card p-4">

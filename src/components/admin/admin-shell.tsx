@@ -2,15 +2,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Briefcase, Cpu, FileCode2, Gift, Layers, LayoutDashboard, Menu, Package, Receipt, Settings, Shield, ShoppingBag, Sparkles, Tags, Users, ArrowLeft, type LucideIcon } from "lucide-react";
+import { BarChart3, Briefcase, Cpu, FileCode2, Gift, Inbox, Layers, LayoutDashboard, Menu, Package, Receipt, Settings, Shield, ShoppingBag, Sparkles, Tags, Users, ArrowLeft, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SITE } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { UserMenu } from "@/components/app/user-menu";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 import type { Profile } from "@/types";
+import type { PlanKey } from "@/lib/access/policy";
+import { BrandMark, type Brand } from "@/components/app/brand-mark";
 
 interface NavItem {
   href: string;
@@ -18,6 +19,8 @@ interface NavItem {
   icon: LucideIcon;
   exact?: boolean;
   superOnly?: boolean;
+  /** Khoá số đếm hiển thị cạnh mục (vd: tin nhắn mới). */
+  badge?: "messages";
 }
 
 const SECTIONS: { title: string; items: NavItem[] }[] = [
@@ -34,6 +37,7 @@ const SECTIONS: { title: string; items: NavItem[] }[] = [
       { href: "/admin/users", label: "Người dùng", icon: Users },
       { href: "/admin/businesses", label: "Business", icon: Briefcase },
       { href: "/admin/generations", label: "Generation", icon: Cpu },
+      { href: "/admin/messages", label: "Hộp thư liên hệ", icon: Inbox, badge: "messages" },
     ],
   },
   {
@@ -75,7 +79,8 @@ function currentLabel(pathname: string): string {
   return "Quản trị";
 }
 
-export function AdminShell({ profile, children }: { profile: Profile; children: React.ReactNode }) {
+export function AdminShell({ profile, plan, brand, newMessages = 0, children }: { profile: Profile; plan: PlanKey; brand: Brand; newMessages?: number; children: React.ReactNode }) {
+  const badgeCount = (key?: "messages") => (key === "messages" ? newMessages : 0);
   const pathname = usePathname();
   // Sheet tự đóng khi đổi route: lưu pathname lúc mở, so với pathname hiện tại.
   const [openedAt, setOpenedAt] = React.useState<string | null>(null);
@@ -92,12 +97,10 @@ export function AdminShell({ profile, children }: { profile: Profile; children: 
   const sidebarBody = (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-4">
-        <Link href="/admin" className="flex items-center gap-2 font-bold">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"><Shield className="size-4" /></span>
-          <span className="leading-tight">
-            {SITE.shortName}
-            <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Quản trị</span>
-          </span>
+        <BrandMark brand={brand} href="/admin" showName={false} />
+        <Link href="/admin" className="min-w-0 leading-tight font-bold">
+          <span className="block truncate">{brand.name}</span>
+          <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Quản trị</span>
         </Link>
       </div>
       <nav className="flex flex-1 flex-col gap-4 overflow-y-auto p-3" aria-label="Điều hướng quản trị">
@@ -118,7 +121,8 @@ export function AdminShell({ profile, children }: { profile: Profile; children: 
                       className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors", active ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground")}
                     >
                       <item.icon className="size-4" />
-                      {item.label}
+                      <span className="flex-1 truncate">{item.label}</span>
+                      {badgeCount(item.badge) > 0 ? <Badge variant="info" className="ml-auto h-5 min-w-5 justify-center px-1.5 text-[10px]">{badgeCount(item.badge)}</Badge> : null}
                     </Link>
                   );
                 })}
@@ -162,7 +166,7 @@ export function AdminShell({ profile, children }: { profile: Profile; children: 
               <Link href="/dashboard"><ArrowLeft /></Link>
             </Button>
             <ThemeToggle />
-            <UserMenu profile={profile} plan="pro_member" />
+            <UserMenu profile={profile} plan={plan} />
           </div>
         </header>
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">

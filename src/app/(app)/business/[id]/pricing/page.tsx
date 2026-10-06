@@ -56,9 +56,12 @@ export default async function PricingPage({ params }: { params: Promise<{ id: st
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Máy tính chi phí & biên lợi nhuận</h2>
-        <PremiumGate ctx={ctx} feature="pricing.calculators" businessId={id} title="Máy tính định giá" description="Tính giá vốn, giá bán gợi ý và biên lợi nhuận cho từng gói — lưu lại để dùng dần." teaserLines={4}>
+        {can(ctx, "pricing.calculators") ? (
           <PricingCalculators asset={calculator} anchorPrice={anchor} />
-        </PremiumGate>
+        ) : (
+          // Gói miễn phí: dùng máy tính cơ bản (không lưu); mở khoá để lưu & đồng bộ với bảng giá.
+          <PricingCalculators asset={calculator} anchorPrice={anchor} readOnly upgradeHref={`/checkout/business-kit?business=${id}`} />
+        )}
       </section>
     </div>
   );

@@ -5,9 +5,13 @@ import { BadgePercent, CreditCard, ShieldCheck, Undo2 } from "lucide-react";
 import { getProducts } from "@/lib/data/catalog";
 import { AnalyticsTracker } from "@/components/app/analytics-tracker";
 import { PlanComparison, PricingPlans } from "@/components/site/pricing-plans";
+import { Reveal } from "@/components/motion/reveal";
 import { Section, SectionHeading, CtaBanner, PageIntro } from "@/components/site/section";
 import { FaqList } from "@/components/site/faq-list";
 import { PAYMENT_FAQ } from "@/components/site/faq-data";
+
+/** ISR: trang public được cache và làm mới mỗi 600s (admin đổi dữ liệu sẽ revalidate ngay). */
+export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: "Bảng giá",
@@ -58,7 +62,9 @@ export default async function PricingPage() {
 
       <Section className="border-t bg-muted/30" id="compare">
         <div className="container-x">
-          <SectionHeading eyebrow="So sánh chi tiết" title="Gói nào mở khoá những gì" description="Quyền truy cập (entitlement) được cấp ngay sau khi thanh toán. Business Kit áp dụng cho một business; Pro Membership áp dụng cho toàn tài khoản." />
+          <Reveal>
+            <SectionHeading eyebrow="So sánh chi tiết" title="Gói nào mở khoá những gì" description="Quyền truy cập (entitlement) được cấp ngay sau khi thanh toán. Business Kit áp dụng cho một business; Pro Membership áp dụng cho toàn tài khoản." />
+          </Reveal>
           <div className="mt-10">
             <PlanComparison products={products} />
           </div>
@@ -68,7 +74,9 @@ export default async function PricingPage() {
       <Section id="faq">
         <div className="container-x grid gap-10 lg:grid-cols-[1fr_1.4fr]">
           <div>
-            <SectionHeading align="left" eyebrow="Thanh toán" title="Câu hỏi về thanh toán & hoàn tiền" description="Nếu chưa tìm thấy câu trả lời, hãy xem trang FAQ đầy đủ hoặc nhắn cho chúng tôi." />
+            <Reveal>
+              <SectionHeading align="left" eyebrow="Thanh toán" title="Câu hỏi về thanh toán & hoàn tiền" description="Nếu chưa tìm thấy câu trả lời, hãy xem trang FAQ đầy đủ hoặc nhắn cho chúng tôi." />
+            </Reveal>
             <div className="mt-6 flex flex-wrap gap-2 text-sm">
               <Link href="/refund-policy" className="rounded-full border px-3 py-1.5 hover:bg-accent">Chính sách hoàn tiền</Link>
               <Link href="/faq" className="rounded-full border px-3 py-1.5 hover:bg-accent">FAQ đầy đủ</Link>

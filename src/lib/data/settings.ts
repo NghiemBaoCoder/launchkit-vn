@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 export interface SiteSettings {
   site_name: string;
@@ -50,7 +50,8 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
 
 /** Cài đặt public của site (đọc được bởi khách). */
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
-  const supabase = await createClient();
+  // Client public (không cookie) để layout/trang công khai vẫn prerender được.
+  const supabase = createPublicClient();
   const { data } = await supabase.from("app_settings").select("value").eq("key", "site").maybeSingle();
   return { ...DEFAULT_SITE_SETTINGS, ...((data?.value as Partial<SiteSettings>) ?? {}) };
 });

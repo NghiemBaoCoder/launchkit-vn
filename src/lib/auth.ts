@@ -10,11 +10,29 @@ export class AuthError extends Error {
   }
 }
 
-/** Người dùng đăng nhập hiện tại (null nếu khách). Được cache theo request. */
-export const getCurrentUser = cache(async () => {
+export interface SessionUser {
+  id: string;
+  email: string | null;
+  user_metadata: Record<string, unknown>;
+  app_metadata: Record<string, unknown>;
+}
+
+/**
+ * Người dùng đăng nhập hiện tại (null nếu khách). Được cache theo request.
+ * Dùng getClaims() (xác thực JWT cục bộ, không gọi mạng tới Auth server mỗi request);
+ * các thao tác nhạy cảm vẫn kiểm tra lại trên DB qua profile/RLS.
+ */
+export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  return data.user ?? null;
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub) return null;
+  return {
+    id: claims.sub,
+    email: typeof claims.email === "string" ? claims.email : null,
+    user_metadata: (claims.user_metadata as Record<string, unknown> | undefined) ?? {},
+    app_metadata: (claims.app_metadata as Record<string, unknown> | undefined) ?? {},
+  };
 });
 
 /** Profile hiện tại (null nếu khách). Được cache theo request. */

@@ -131,3 +131,23 @@ describe("Storage — chính sách thư mục theo user", () => {
     await admin.storage.from("exports").remove([path]);
   });
 });
+
+describe("RLS — hộp thư liên hệ (contact_messages)", () => {
+  it("user thường không đọc được tin của người khác; service role ghi được; admin đọc được", async () => {
+    const { data: inserted, error } = await admin.from("contact_messages").insert({ name: "RLS Guest", email: `rls-contact-${stamp}@example.com`, topic: "support", message: "Tin nhắn kiểm thử RLS, đủ dài để hợp lệ." }).select("id").single();
+    expect(error).toBeNull();
+    // Người dùng thường (B) không thấy tin của khách ẩn danh và không insert trực tiếp được
+    expect((await B.client.from("contact_messages").select("id").eq("id", inserted!.id)).data).toEqual([]);
+    const direct = await B.client.from("contact_messages").insert({ name: "Hack", email: "h@example.com", message: "Cố ghi trực tiếp vào bảng này." });
+    expect(direct.error).not.toBeNull();
+    // Admin đọc & cập nhật được
+    const adminUser = await userClient(`rls-admin-contact-${stamp}@example.com`);
+    await admin.from("profiles").update({ role: "admin" }).eq("id", adminUser.id);
+    const adminClient = (await userClient(`rls-admin-contact-${stamp}@example.com`)).client; // đăng nhập lại để JWT có role mới
+    const { data: seen } = await adminClient.from("contact_messages").select("id, status").eq("id", inserted!.id);
+    expect(seen).toHaveLength(1);
+    const upd = await adminClient.from("contact_messages").update({ status: "read" }).eq("id", inserted!.id).select("status").single();
+    expect(upd.data?.status).toBe("read");
+    await admin.from("contact_messages").delete().eq("id", inserted!.id);
+  });
+});

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Clock, Mail, MessageCircle, CircleHelp } from "lucide-react";
 import { SITE } from "@/lib/constants";
-import { getCurrentUser } from "@/lib/auth";
 import { ContactForm } from "@/components/site/contact-form";
 import { Section, PageIntro } from "@/components/site/section";
 
@@ -11,9 +10,9 @@ export const metadata: Metadata = {
   description: "Liên hệ đội ngũ LaunchKit VN: hỗ trợ sử dụng, thanh toán & hoá đơn, hợp tác affiliate, góp ý sản phẩm. Phản hồi trong 1 ngày làm việc.",
 };
 
-export default async function ContactPage() {
-  const user = await getCurrentUser();
-  const defaultName = typeof user?.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "";
+export const revalidate = 3600;
+
+export default function ContactPage() {
   return (
     <>
       <PageIntro eyebrow="Liên hệ" title="Chúng tôi ở đây để giúp bạn bắt đầu" description="Câu hỏi về sản phẩm, thanh toán, hợp tác hay chỉ muốn góp ý — gửi cho chúng tôi, một người thật sẽ trả lời." />
@@ -73,7 +72,7 @@ export default async function ContactPage() {
             <h2 className="text-xl font-bold">Gửi tin nhắn</h2>
             <p className="mt-1 text-sm text-muted-foreground">Điền thông tin bên dưới. Nếu bạn đã đăng nhập, chúng tôi sẽ gắn tin nhắn với tài khoản để hỗ trợ nhanh hơn.</p>
             <div className="mt-6">
-              <ContactForm defaultEmail={user?.email ?? ""} defaultName={defaultName} />
+              <ContactForm />
             </div>
           </div>
         </div>
