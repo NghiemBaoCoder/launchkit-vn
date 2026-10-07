@@ -5,8 +5,11 @@ import { logActivity } from "@/lib/data/activity";
 import { env } from "@/lib/env";
 import { fail, ok, type ActionResult, type JsonValue, type Order, type Payment, type Product, type Profile } from "@/types";
 import { getPaymentProvider } from "./index";
+import type { PaymentProviderName } from "./provider";
 import { markOrderPaid } from "./fulfill";
 import { computeTotal, effectivePrice, validateCoupon } from "./pricing";
+import { vnpMakeTxnRef } from "./vnpay/sign";
+import { randomToken } from "@/lib/utils";
 
 export const ORDER_TTL_HOURS = 24;
 
@@ -54,6 +57,10 @@ export interface CreateOrderInput {
   acceptTerms: boolean;
   /** Cho phép mua lại gói subscription đang hoạt động (gia hạn sớm). */
   allowRenewal?: boolean;
+  /** Cổng thanh toán (mặc định mock). */
+  method?: PaymentProviderName;
+  /** IP người mua (VNPay yêu cầu). */
+  ipAddr?: string;
 }
 
 export interface CreateOrderOutput {
@@ -124,6 +131,9 @@ export async function createOrderForUser(profile: Profile, input: CreateOrderInp
 
   const now = new Date();
   const expiresAt = new Date(now.getTime() + ORDER_TTL_HOURS * 60 * 60 * 1000);
+  const method: PaymentProviderName = total === 0 ? "mock" : (input.method ?? "mock");
+  // VNPay: vnp_TxnRef chỉ chữ + số, duy nhất trong ngày → lưu vào payments.provider_ref để IPN tra cứu.
+  const txnRef = method === "vnpay" ? vnpMakeTxnRef(String(orderNumber), randomToken(6)) : null;
 
   // Đơn pending cũ của cùng sản phẩm/business bị thay thế bởi đơn mới
   {
@@ -146,7 +156,7 @@ export async function createOrderForUser(profile: Profile, input: CreateOrderInp
       currency: product.currency || "VND",
       coupon_id: couponId,
       coupon_code: couponCode,
-      payment_method: "mock",
+      payment_method: method,
       affiliate_id: affiliateId,
       terms_accepted_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
@@ -161,7 +171,7 @@ export async function createOrderForUser(profile: Profile, input: CreateOrderInp
 
   const { data: payment, error: payErr } = await admin
     .from("payments")
-    .insert({ order_id: order.id, user_id: profile.id, provider: "mock", amount: total, currency: product.currency || "VND", status: "pending" })
+    .insert({ order_id: order.id, user_id: profile.id, provider: method, provider_ref: txnRef, amount: total, currency: product.currency || "VND", status: "pending" })
     .select("id")
     .single();
   if (payErr || !payment) return fail(payErr?.message ?? "Không tạo được giao dịch");
@@ -174,9 +184,25 @@ export async function createOrderForUser(profile: Profile, input: CreateOrderInp
     return ok({ orderId: order.id, paymentId: payment.id, total, redirectTo: `/payment/success?order=${order.id}` });
   }
 
-  const provider = getPaymentProvider("mock");
-  const { redirectUrl } = await provider.createPayment({ orderId: order.id, paymentId: payment.id, amount: total, currency: product.currency || "VND", returnUrl: `${env.appUrl}/payment/pending?order=${order.id}` });
-  return ok({ orderId: order.id, paymentId: payment.id, total, redirectTo: redirectUrl });
+  const provider = getPaymentProvider(method);
+  try {
+    const { redirectUrl } = await provider.createPayment({
+      orderId: order.id,
+      paymentId: payment.id,
+      amount: total,
+      currency: product.currency || "VND",
+      returnUrl: method === "vnpay" ? `${env.appUrl}/api/payments/vnpay/return` : `${env.appUrl}/payment/pending?order=${order.id}`,
+      txnRef: txnRef ?? undefined,
+      orderInfo: `Thanh toan don hang ${String(orderNumber).replace(/[^A-Za-z0-9]/g, "")} LaunchKit VN`,
+      ipAddr: input.ipAddr,
+      // VNPay giới hạn phiên thanh toán; 30 phút là đủ, đơn vẫn giữ 24h để thử lại.
+      expiresAt: new Date(now.getTime() + 30 * 60 * 1000),
+    });
+    return ok({ orderId: order.id, paymentId: payment.id, total, redirectTo: redirectUrl });
+  } catch (e) {
+    await admin.from("payments").update({ status: "failed", error: e instanceof Error ? e.message : "Không tạo được phiên thanh toán" }).eq("id", payment.id);
+    return fail(e instanceof Error ? e.message : "Không tạo được phiên thanh toán tại cổng.", "gateway");
+  }
 }
 
 export type OrderDetail = Order & {

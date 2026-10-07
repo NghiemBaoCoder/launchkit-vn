@@ -15,6 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import { checkOwnership, findActiveProduct, isUuid } from "@/lib/payments/orders";
 import { formatVND } from "@/lib/utils";
 import { effectivePrice } from "@/lib/payments/pricing";
+import { getPaymentMethods } from "@/lib/payments/methods";
 
 export const metadata: Metadata = { title: "Thanh toán" };
 
@@ -127,7 +128,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
     <div className="mx-auto max-w-5xl space-y-6">
       {tracker}
       <PageHeader eyebrow="Thanh toán" title={`Mua ${product.name}`} description="Kiểm tra đơn hàng, áp dụng mã giảm giá và chọn phương thức thanh toán." actions={<Button asChild variant="ghost" size="sm"><Link href="/pricing">So sánh các gói</Link></Button>} />
-      <CheckoutForm product={checkoutProduct} businessId={selected?.id ?? null} businessName={selected?.name ?? null} initialCoupon={sp.coupon} />
+      <CheckoutForm product={checkoutProduct} businessId={selected?.id ?? null} businessName={selected?.name ?? null} initialCoupon={sp.coupon} methods={getPaymentMethods()} />
     </div>
   );
 }

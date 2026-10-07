@@ -9,12 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { requireProfile } from "@/lib/auth";
 import { expireStaleOrders } from "@/lib/payments/fulfill";
+import { vnpMessage } from "@/lib/payments/vnpay/sign";
 import { getOrderDetail, resumePaymentHref, retryCheckoutHref } from "@/lib/payments/orders";
 
 export const metadata: Metadata = { title: "Thanh toán thất bại" };
 
-export default async function PaymentFailedPage({ searchParams }: { searchParams: Promise<{ order?: string; reason?: string }> }) {
-  const { order: orderId, reason } = await searchParams;
+export default async function PaymentFailedPage({ searchParams }: { searchParams: Promise<{ order?: string; reason?: string; code?: string }> }) {
+  const { order: orderId, reason, code } = await searchParams;
   await requireProfile(`/payment/failed${orderId ? `?order=${orderId}` : ""}`);
   await expireStaleOrders();
   const order = orderId ? await getOrderDetail(orderId) : null;
@@ -47,8 +48,14 @@ export default async function PaymentFailedPage({ searchParams }: { searchParams
       {payment?.error && payment.status === "failed" ? (
         <Alert variant="destructive">
           <XCircle />
-          <AlertTitle>Lý do</AlertTitle>
-          <AlertDescription>{payment.error}</AlertDescription>
+          <AlertTitle>Lý do{reason === "vnpay" ? " (VNPay)" : ""}</AlertTitle>
+          <AlertDescription>{payment.error}{reason === "vnpay" && code ? ` · mã ${code}` : ""}</AlertDescription>
+        </Alert>
+      ) : reason === "vnpay" ? (
+        <Alert variant="destructive">
+          <XCircle />
+          <AlertTitle>VNPay báo không thành công</AlertTitle>
+          <AlertDescription>{vnpMessage(code)}</AlertDescription>
         </Alert>
       ) : null}
       <Card>

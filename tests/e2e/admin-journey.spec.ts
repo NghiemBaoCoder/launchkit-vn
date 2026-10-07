@@ -50,7 +50,7 @@ test("admin journey: dashboard, users, businesses, orders, payments, credits, co
   if (await payLink.count()) {
     await payLink.click();
     await expect(page).toHaveURL(/\/admin\/payments\/[0-9a-f-]{36}/);
-    await expect(page.getByText(/mock/i).first()).toBeVisible();
+    await expect(page.getByText(/mock|vnpay/i).first()).toBeVisible(); // cổng mock hoặc VNPay tuỳ giao dịch mới nhất
   }
 
   // Create coupon
