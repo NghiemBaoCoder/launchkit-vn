@@ -43,6 +43,7 @@ test("customer journey: guest → purchase → unlocked workspace → persisted"
   await page.getByPlaceholder(/DEMO50/).fill("DEMO50");
   await page.getByRole("button", { name: /Áp dụng/ }).click();
   await expect(page.getByText(/149\.500/).first()).toBeVisible({ timeout: 15_000 });
+  await page.locator('input[name="payment_method"][value="mock"]').check(); // VNPay có thể là mặc định khi đã cấu hình
   await page.locator("#terms").click();
   await page.getByRole("button", { name: /^Thanh toán/ }).first().click();
   await expect(page).toHaveURL(/\/checkout\/pay\//, { timeout: 30_000 });

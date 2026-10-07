@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AuthError, requireProfileAction } from "@/lib/auth";
@@ -9,6 +10,7 @@ import { logActivity } from "@/lib/data/activity";
 import { signMockPayload } from "@/lib/payments/mock-provider";
 import { processMockWebhook } from "@/lib/payments/webhook";
 import { checkOwnership, createOrderForUser, findActiveProduct, isUuid } from "@/lib/payments/orders";
+import { isVnpayConfigured } from "@/lib/payments/vnpay-provider";
 import { computeTotal, effectivePrice, validateCoupon } from "@/lib/payments/pricing";
 import { randomToken } from "@/lib/utils";
 import { fail, ok, type ActionResult, type OrderStatus, type PaymentStatus } from "@/types";
@@ -60,10 +62,19 @@ const createOrderSchema = z.object({
   businessId: z.string().uuid().optional().nullable(),
   couponCode: z.string().trim().max(40).optional().nullable(),
   acceptTerms: z.boolean(),
+  method: z.enum(["mock", "vnpay"]).default("mock"),
 });
 
+/** IP người mua từ header (Vercel/proxy) — VNPay yêu cầu vnp_IpAddr. */
+async function clientIp(): Promise<string> {
+  const h = await headers();
+  const fwd = h.get("x-forwarded-for") ?? h.get("x-real-ip") ?? "";
+  const ip = fwd.split(",")[0]?.trim();
+  return ip && ip.length <= 45 ? ip : "127.0.0.1";
+}
+
 /** Tạo đơn hàng và trả về đường dẫn tiếp theo (cổng thanh toán hoặc trang thành công nếu tổng = 0). */
-export async function createOrderAction(input: { productSlug: string; businessId?: string | null; couponCode?: string | null; acceptTerms: boolean }): Promise<ActionResult<{ orderId: string; redirectTo: string }>> {
+export async function createOrderAction(input: { productSlug: string; businessId?: string | null; couponCode?: string | null; acceptTerms: boolean; method?: "mock" | "vnpay" }): Promise<ActionResult<{ orderId: string; redirectTo: string }>> {
   let profile;
   try {
     profile = await requireProfileAction();
@@ -74,12 +85,15 @@ export async function createOrderAction(input: { productSlug: string; businessId
   if (!parsed.success) return fail("Thông tin đơn hàng không hợp lệ", "validation", parsed.error.flatten().fieldErrors as Record<string, string[]>);
   const product = await findActiveProduct(parsed.data.productSlug);
   if (!product) return fail("Sản phẩm không tồn tại hoặc đã ngừng bán.", "not_found");
+  if (parsed.data.method === "vnpay" && !isVnpayConfigured()) return fail("VNPay chưa được cấu hình trên máy chủ. Vui lòng chọn phương thức khác.", "method");
 
   const res = await createOrderForUser(profile, {
     product,
     businessId: parsed.data.businessId ?? null,
     couponCode: parsed.data.couponCode ?? null,
     acceptTerms: parsed.data.acceptTerms,
+    method: parsed.data.method,
+    ipAddr: parsed.data.method === "vnpay" ? await clientIp() : undefined,
   });
   if (!res.ok) return res;
   revalidatePath("/dashboard/purchases");

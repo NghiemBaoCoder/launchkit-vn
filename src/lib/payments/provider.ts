@@ -7,6 +7,14 @@ export interface CreatePaymentInput {
   currency: string;
   /** URL quay lại sau khi thanh toán (provider thật dùng để redirect). */
   returnUrl: string;
+  /** Mã tham chiếu giao dịch tại merchant (VNPay: vnp_TxnRef, chỉ chữ + số). */
+  txnRef?: string;
+  /** Mô tả đơn (ASCII, không dấu) hiển thị tại cổng. */
+  orderInfo?: string;
+  /** IP người mua (VNPay bắt buộc). */
+  ipAddr?: string;
+  /** Hạn thanh toán tại cổng. */
+  expiresAt?: Date;
 }
 
 export interface CreatePaymentResult {
@@ -20,4 +28,6 @@ export interface PaymentProvider {
   verifyWebhookSignature(rawBody: string, signature: string): boolean;
 }
 
-export type PaymentProviderName = "mock";
+export type PaymentProviderName = "mock" | "vnpay";
+
+export const PAYMENT_PROVIDER_NAMES: readonly PaymentProviderName[] = ["mock", "vnpay"] as const;

@@ -15,6 +15,13 @@ export function serverEnv() {
     mockPaymentSecret: process.env.MOCK_PAYMENT_WEBHOOK_SECRET ?? "mock-secret-dev",
     aiProvider: (process.env.AI_PROVIDER ?? "mock") as "mock" | "anthropic",
     anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? "",
+    /** VNPay Pay v2.1.0 — để trống TMN code/secret thì phương thức VNPay bị ẩn. */
+    vnpay: {
+      tmnCode: (process.env.VNPAY_TMN_CODE ?? "").trim(),
+      hashSecret: (process.env.VNPAY_HASH_SECRET ?? "").trim(),
+      paymentUrl: (process.env.VNPAY_PAYMENT_URL ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html").trim(),
+      apiUrl: (process.env.VNPAY_API_URL ?? "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction").trim(),
+    },
   };
 }
 

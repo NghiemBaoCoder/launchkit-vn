@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { createOrderAction, previewCouponAction, type CouponPreview } from "@/lib/actions/checkout";
-import { PAYMENT_METHODS } from "@/lib/payments/labels";
+import { PAYMENT_METHODS, type PaymentMethodOption } from "@/lib/payments/labels";
 import { computeTotal, effectivePrice } from "@/lib/payments/pricing";
 import { cn, formatVND } from "@/lib/utils";
 
@@ -36,15 +36,18 @@ interface CheckoutFormProps {
   businessId: string | null;
   businessName: string | null;
   initialCoupon?: string;
+  /** Phương thức khả dụng (server tính theo cấu hình cổng). */
+  methods?: PaymentMethodOption[];
 }
 
-export function CheckoutForm({ product, businessId, businessName, initialCoupon }: CheckoutFormProps) {
+export function CheckoutForm({ product, businessId, businessName, initialCoupon, methods = PAYMENT_METHODS }: CheckoutFormProps) {
   const router = useRouter();
+  const firstEnabled = methods.find((m) => m.enabled)?.id ?? "mock";
   const [code, setCode] = React.useState(initialCoupon ?? "");
   const [applied, setApplied] = React.useState<CouponPreview | null>(null);
   const [couponError, setCouponError] = React.useState<string | null>(null);
   const [applying, setApplying] = React.useState(false);
-  const [method, setMethod] = React.useState("mock");
+  const [method, setMethod] = React.useState(firstEnabled);
   const [acceptTerms, setAcceptTerms] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [formError, setFormError] = React.useState<{ message: string; code?: string } | null>(null);
@@ -90,13 +93,14 @@ export function CheckoutForm({ product, businessId, businessName, initialCoupon 
       setFormError({ message: "Bạn cần đồng ý Điều khoản sử dụng và Chính sách hoàn tiền để tiếp tục.", code: "terms" });
       return;
     }
-    if (method !== "mock") {
-      setFormError({ message: "Phương thức này chưa được tích hợp. Vui lòng chọn Mock Payment (demo)." });
+    const chosen = methods.find((m) => m.id === method);
+    if (!chosen?.enabled || (method !== "mock" && method !== "vnpay")) {
+      setFormError({ message: "Phương thức này chưa khả dụng. Vui lòng chọn phương thức khác." });
       return;
     }
     setSubmitting(true);
     try {
-      const res = await createOrderAction({ productSlug: product.slug, businessId, couponCode: applied?.coupon.code ?? null, acceptTerms });
+      const res = await createOrderAction({ productSlug: product.slug, businessId, couponCode: applied?.coupon.code ?? null, acceptTerms, method });
       if (!res.ok) {
         setFormError({ message: res.error, code: res.code });
         if (res.code === "coupon") {
@@ -107,6 +111,11 @@ export function CheckoutForm({ product, businessId, businessName, initialCoupon 
         return;
       }
       if (res.message) toast.success(res.message);
+      // Cổng thật (VNPay) trả URL tuyệt đối → rời app; mock/miễn phí → điều hướng nội bộ.
+      if (/^https?:\/\//i.test(res.data.redirectTo)) {
+        window.location.assign(res.data.redirectTo);
+        return;
+      }
       router.push(res.data.redirectTo);
     } finally {
       setSubmitting(false);
@@ -221,7 +230,7 @@ export function CheckoutForm({ product, businessId, businessName, initialCoupon 
             {/* Phương thức */}
             <fieldset className="min-w-0 space-y-2">
               <legend className="mb-2 text-sm font-medium">Phương thức thanh toán</legend>
-              {PAYMENT_METHODS.map((m) => (
+              {methods.map((m) => (
                 <label
                   key={m.id}
                   className={cn(
@@ -229,14 +238,14 @@ export function CheckoutForm({ product, businessId, businessName, initialCoupon 
                     method === m.id && m.enabled ? "border-primary bg-primary/5" : "hover:bg-muted/40",
                     !m.enabled && "cursor-not-allowed opacity-60",
                   )}
-                  title={!m.enabled ? "Cần tích hợp" : undefined}
+                  title={!m.enabled ? m.description : undefined}
                 >
                   <input type="radio" name="payment_method" value={m.id} checked={method === m.id} disabled={!m.enabled} onChange={() => setMethod(m.id)} className="accent-primary" />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="font-medium">{m.label}</span>
                     <span className="truncate text-xs text-muted-foreground">{m.description}</span>
                   </span>
-                  {!m.enabled ? <Badge variant="outline">Cần tích hợp</Badge> : <Badge variant="info">Demo</Badge>}
+                  {!m.enabled ? <Badge variant="outline">{m.badge ?? "Cần tích hợp"}</Badge> : <Badge variant={m.id === "vnpay" && m.badge === "Thật" ? "success" : "info"}>{m.badge ?? "Demo"}</Badge>}
                 </label>
               ))}
             </fieldset>

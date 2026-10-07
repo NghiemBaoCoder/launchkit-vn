@@ -58,10 +58,17 @@ export const PAYMENT_PROVIDER_LABELS: Record<string, string> = {
   card: "Thẻ quốc tế",
 };
 
-/** Các phương thức hiển thị ở trang checkout — chỉ mock đang hoạt động. */
-export const PAYMENT_METHODS: { id: string; label: string; description: string; enabled: boolean }[] = [
-  { id: "mock", label: "Mock Payment (demo)", description: "Cổng thanh toán giả lập để kiểm thử — không trừ tiền thật.", enabled: true },
-  { id: "vnpay", label: "VNPay", description: "Cần tích hợp", enabled: false },
-  { id: "momo", label: "MoMo", description: "Cần tích hợp", enabled: false },
-  { id: "card", label: "Thẻ quốc tế", description: "Cần tích hợp", enabled: false },
+export interface PaymentMethodOption {
+  id: string;
+  label: string;
+  description: string;
+  enabled: boolean;
+  badge?: string;
+}
+
+/** Phương thức mặc định (khi server không truyền danh sách) — chỉ mock. Danh sách thật: getPaymentMethods() (server). */
+export const PAYMENT_METHODS: PaymentMethodOption[] = [
+  { id: "mock", label: "Mock Payment (demo)", description: "Cổng thanh toán giả lập để kiểm thử — không trừ tiền thật.", enabled: true, badge: "Demo" },
+  { id: "vnpay", label: "VNPay", description: "Chưa cấu hình", enabled: false, badge: "Chưa cấu hình" },
+  { id: "momo", label: "MoMo", description: "Cần tích hợp", enabled: false, badge: "Cần tích hợp" },
 ];

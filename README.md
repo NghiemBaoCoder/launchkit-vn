@@ -72,6 +72,16 @@ Chromium cho Playwright: `PW_CHROMIUM_PATH=/path/to/chrome pnpm test:e2e` nếu 
 3. Vercel → Environment Variables: như `.env.local` (đổi URL/keys, `NEXT_PUBLIC_APP_URL=https://<domain>`).
 4. `pnpm build` chạy sạch; không cần cấu hình thêm (Turbopack mặc định).
 
+## VNPay (sandbox → production)
+
+1. Đăng ký tài khoản test tại https://sandbox.vnpayment.vn/devreg/ — VNPay gửi `vnp_TmnCode` và `vnp_HashSecret` qua email.
+2. Vercel → Environment Variables: `VNPAY_TMN_CODE`, `VNPAY_HASH_SECRET` (Secret). `VNPAY_PAYMENT_URL` mặc định là sandbox; khi lên thật đổi thành `https://pay.vnpay.vn/vpcpay.html`. Redeploy.
+3. VNPay Merchant Portal (sandbox: https://sandbox.vnpayment.vn/merchantv2/) → cấu hình **IPN URL** = `https://<domain>/api/payments/webhook/vnpay`. Return URL app tự gửi theo từng giao dịch (`/api/payments/vnpay/return`).
+4. Thử: Bảng giá → Mua → chọn **VNPay** → trang VNPay sandbox → ngân hàng NCB, thẻ `9704198526191432198`, tên `NGUYEN VAN A`, ngày phát hành `07/15`, OTP `123456`.
+5. Kết quả: đơn chuyển `paid`, cấp entitlement/credits, thông báo và hoa hồng affiliate như mock; xem ở `/dashboard/purchases` và `/admin/payments` (cổng `vnpay`, mã tham chiếu `vnp_TxnRef`).
+
+Kỹ thuật: `src/lib/payments/vnpay/sign.ts` (ký/xác thực HMAC-SHA512 theo mã mẫu VNPay, có unit test), `vnpay-provider.ts` (tạo URL thanh toán v2.1.0), `vnpay/process.ts` (xử lý IPN/Return idempotent, kiểm tra số tiền), e2e `tests/e2e/vnpay-sandbox.spec.ts` mô phỏng callback đã ký.
+
 ## Kiến trúc
 
 Xem `docs/ARCHITECTURE.md` (quy ước server actions, phân quyền, thanh toán, sinh nội dung).
